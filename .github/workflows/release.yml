@@ -1,0 +1,116 @@
+name: Release
+
+on:
+  push:
+    tags:
+    - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup Go
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.15
+
+    - name: Env
+      run: |
+        go env
+
+    - name: Restore dependency cache
+      uses: actions/cache@v2
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Names
+      run: |
+        echo IMAGE_NAME=$(echo ${{ github.event.repository.name }} | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
+        echo IMAGE_REPO=$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
+        echo IMAGE_TAG=${GITHUB_REF##*/} >> $GITHUB_ENV
+
+    - name: Build binaries
+      run: |
+        GOOS=darwin GOARCH=amd64 go build -o gatekeeper-securitycenter_darwin_amd64 .
+        GOOS=linux GOARCH=amd64 go build -o gatekeeper-securitycenter_linux_amd64 .
+        GOOS=linux GOARCH=arm64 go build -o gatekeeper-securitycenter_linux_arm64 .
+
+    - name: Create checksums
+      run: shasum -a 256 gatekeeper-securitycenter_* > SHA256SUMS
+
+    - name: Install crane and ko
+      run: |
+        go get github.com/google/go-containerregistry/cmd/crane
+        go get github.com/google/ko/cmd/ko
+      working-directory: tools
+
+    - name: Build and push container images
+      run: |
+        $(go env GOPATH)/bin/crane auth login docker.pkg.github.com -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+        $(go env GOPATH)/bin/ko publish . --base-import-paths --platform linux/amd64 --tags latest,$IMAGE_TAG
+      env:
+        KO_DOCKER_REPO: docker.pkg.github.com/${{ env.IMAGE_REPO }}
+
+    - name: Create release body file
+      run: |
+        echo '## Images' > ${{ runner.temp }}/body.md
+        echo "    gcr.io/cloud-solutions-images/$IMAGE_NAME:$IMAGE_TAG (multi-arch)" >> ${{ runner.temp }}/body.md
+        echo "" >> ${{ runner.temp }}/body.md
+        echo "    docker.pkg.github.com/$IMAGE_REPO/$IMAGE_NAME:$IMAGE_TAG (linux/amd64)" >> ${{ runner.temp }}/body.md
+
+    - name: Create release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: ${{ github.ref }}
+        body_path: ${{ runner.temp }}/body.md
+
+    - name: Upload asset darwin amd64
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: gatekeeper-securitycenter_darwin_amd64
+        asset_name: gatekeeper-securitycenter_darwin_amd64
+        asset_content_type: application/octet-stream
+
+    - name: Upload binary linux amd64
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: gatekeeper-securitycenter_linux_amd64
+        asset_name: gatekeeper-securitycenter_linux_amd64
+        asset_content_type: application/octet-stream
+
+    - name: Upload binary linux arm64
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: gatekeeper-securitycenter_linux_arm64
+        asset_name: gatekeeper-securitycenter_linux_arm64
+        asset_content_type: application/octet-stream
+
+    - name: Upload checksum file
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: SHA256SUMS
+        asset_name: SHA256SUMS
+        asset_content_type: text/plain

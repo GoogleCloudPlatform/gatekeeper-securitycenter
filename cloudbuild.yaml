@@ -1,0 +1,52 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+steps:
+- id: env
+  name: $_GO_IMAGE
+  entrypoint: go
+  args:
+  - env
+- id: ko
+  name: $_GO_IMAGE
+  dir: tools
+  entrypoint: go
+  args:
+  - get
+  - github.com/google/ko/cmd/ko
+- id: image
+  name: $_GO_IMAGE
+  entrypoint: /workspace/.gopath/bin/ko
+  args:
+  - publish
+  - .
+  - --base-import-paths
+  - --platform=all
+  - --tags=latest,$TAG_NAME
+  env:
+  - 'KO_DOCKER_REPO=gcr.io/$_PROJECT_ID'
+options:
+  dynamic_substitutions: true
+  env:
+  - 'CGO_ENABLED=0'
+  - 'GOCACHE=/workspace/.gocache'
+  - 'GOFLAGS=-mod=readonly'
+  - 'GOPATH=/workspace/.gopath'
+  - 'PROJECT_ID=$PROJECT_ID'
+  - 'TAG_NAME=$TAG_NAME'
+  logging: GCS_ONLY
+substitutions:
+  _GO_IMAGE: golang:1.15
+  _PROJECT_ID: $PROJECT_ID
+timeout: 600s
