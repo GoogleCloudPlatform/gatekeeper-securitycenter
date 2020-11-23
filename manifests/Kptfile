@@ -27,12 +27,63 @@ openAPI:
           name: cluster
           value: ""
           setBy: package-default
+    io.k8s.cli.setters.debug-env:
+      description: enable development logging
+      x-k8s-cli:
+        setter:
+          name: debug-env
+          value: "false"
+          setBy: package-default
+    io.k8s.cli.substitutions.dry-run-flag:
+      x-k8s-cli:
+        substitution:
+          name: dry-run-flag
+          pattern: --dry-run=${dry-run}
+          values:
+          - marker: ${dry-run}
+            ref: '#/definitions/io.k8s.cli.setters.dry-run'
+    io.k8s.cli.setters.dry-run:
+      description: disables write operations
+      x-k8s-cli:
+        setter:
+          name: dry-run
+          value: "false"
+          setBy: package-default
     io.k8s.cli.setters.image:
       description: controller image
       x-k8s-cli:
         setter:
           name: image
-          value: gcr.io/cloud-solutions-images/gatekeeper-securitycenter:latest
+          value: docker.pkg.github.com/googlecloudplatform/gatekeeper-securitycenter/gatekeeper-securitycenter
+          setBy: package-default
+    io.k8s.cli.substitutions.interval-flag:
+      x-k8s-cli:
+        substitution:
+          name: interval-flag
+          pattern: --interval=${interval}
+          values:
+          - marker: ${interval}
+            ref: '#/definitions/io.k8s.cli.setters.interval'
+    io.k8s.cli.setters.interval:
+      description: control loop interval in secs
+      x-k8s-cli:
+        setter:
+          name: interval
+          value: "120"
+          setBy: package-default
+    io.k8s.cli.setters.limit-cpu:
+      description: CPU limit
+      x-k8s-cli:
+        setter:
+          name: limit-cpu
+          value: 100m
+          setBy: package-default
+    io.k8s.cli.setters.limit-memory:
+      description: memory limit
+      x-k8s-cli:
+        setter:
+          name: limit-memory
+          value: 128Mi
           setBy: package-default
     io.k8s.cli.setters.namespace:
       description: controller namespace
@@ -40,6 +91,20 @@ openAPI:
         setter:
           name: namespace
           value: gatekeeper-securitycenter
+          setBy: package-default
+    io.k8s.cli.setters.request-cpu:
+      description: CPU request
+      x-k8s-cli:
+        setter:
+          name: request-cpu
+          value: 30m
+          setBy: package-default
+    io.k8s.cli.setters.request-memory:
+      description: memory request
+      x-k8s-cli:
+        setter:
+          name: request-memory
+          value: 32Mi
           setBy: package-default
     io.k8s.cli.setters.source:
       description: Security Command Center source

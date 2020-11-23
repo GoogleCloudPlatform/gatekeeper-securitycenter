@@ -195,7 +195,7 @@ Gatekeeper.
 5.  Download the latest `gatekeeper-securitycenter` binary for your platform:
 
     ```bash
-    VERSION=$(curl -s https://api.github.com/repos/GoogleCloudPlatform/gatekeeper-securitycenter/latest | jq -r '.tag_name')
+    VERSION=$(curl -s https://api.github.com/repos/GoogleCloudPlatform/gatekeeper-securitycenter/releases/latest | jq -r '.tag_name')
     OS=$(go env GOOS)
     ARCH=$(go env GOARCH)
 
@@ -324,10 +324,13 @@ with
     [installation instructions](https://googlecontainertools.github.io/kpt/installation/)
     such as using `brew` for macOS.
 
-8.  Fetch the `kpt` package for `gatekeeper-securitycenter`:
+8.  Fetch the latest version of the `kpt` package for
+    `gatekeeper-securitycenter`:
 
     ```bash
-    kpt pkg get https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter/manifests gatekeeper-securitycenter
+    VERSION=$(curl -s https://api.github.com/repos/GoogleCloudPlatform/gatekeeper-securitycenter/releases/latest | jq -r '.tag_name')
+
+    kpt pkg get https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter.git/manifests@$VERSION gatekeeper-securitycenter
     ```
 
     This creates a directory called `gatekeeper-securitycenter` containing the
@@ -336,7 +339,7 @@ with
 9.  Set the Security Command Center source name:
 
     ```bash
-    kpt cfg set gatekeeper-securitycenter source-name $SOURCE_NAME
+    kpt cfg set gatekeeper-securitycenter source $SOURCE_NAME
     ```
 
 10. Set the optional cluster name. You can use any name you like. For this
@@ -345,6 +348,12 @@ with
     ```bash
     kpt cfg set gatekeeper-securitycenter cluster $(kubectl config current-context)
     ```
+
+    **Note:** Other
+    [setters](https://googlecontainertools.github.io/kpt/guides/consumer/set/)
+    are available to customize the package. Run the command
+    `kpt cfg list-setters gatekeeper-securitycenter` to list the available
+    setters and their current values.
 
 11. Add the Workload Identity annotation to the Kubernetes service account used
     by the controller, to bind it to the findings editor Google service
@@ -359,9 +368,9 @@ with
 12. Apply the controller resources to your cluster:
 
     ```bash
-    kpt live init gatekeeper-securitycenter
+    kpt live init gatekeeper-securitycenter --namespace gatekeeper-securitycenter
 
-    kpt live apply gatekeeper-securitycenter --reconcile-timeout=2m --output=table
+    kpt live apply gatekeeper-securitycenter --reconcile-timeout 2m --output table
     ```
 
     This command creates the following resources in your cluster:

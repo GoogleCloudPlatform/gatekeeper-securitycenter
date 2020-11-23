@@ -36,7 +36,7 @@ Details: https://googlecontainertools.github.io/kpt/reference/cfg/list-setters/
 
     ```bash
     kpt cfg set gatekeeper-securitycenter \
-        source-name organizations/$ORGANIZATION_ID/sources/$SOURCE_ID
+        source organizations/$ORGANIZATION_ID/sources/$SOURCE_ID
     ```
 
     Where `$ORGANIZATION_ID` is your Google Cloud organization ID, and
@@ -69,9 +69,9 @@ Details: https://googlecontainertools.github.io/kpt/reference/cfg/annotate/
 ### Apply the package
 
 ```
-kpt live init gatekeeper-securitycenter
+kpt live init gatekeeper-securitycenter --namespace gatekeeper-securitycenter
 
-kpt live apply gatekeeper-securitycenter --reconcile-timeout=2m --output=table
+kpt live apply gatekeeper-securitycenter --reconcile-timeout 2m --output table
 ```
 
 Details: https://googlecontainertools.github.io/kpt/reference/live/

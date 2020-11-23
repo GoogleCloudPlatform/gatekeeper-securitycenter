@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+#
 # Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,10 +14,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.idea/
-.kpt-hydrated/
-.kpt-skaffold/
-.tmp-sink-dir/
-.vscode/
-/SHA256SUMS
-/gatekeeper-securitycenter*
+set -euf -o pipefail
+
+if ! [ -x "$(command -v ko)" ]; then
+    pushd $(mktemp -d)
+    go mod init tmp; GOFLAGS= go get github.com/google/ko/cmd/ko@v0.6.2
+    popd
+fi
+
+if ! [ -x "$(command -v crane)" ]; then
+    pushd $(mktemp -d)
+    go mod init tmp; GOFLAGS= go get github.com/google/go-containerregistry/cmd/crane@v0.1.4
+    popd
+fi
+
+image_tar=$(mktemp)
+
+ko publish --tarball $image_tar --push=false .
+
+crane push $image_tar $IMAGE

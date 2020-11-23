@@ -33,13 +33,12 @@ var rootCmd = &cobra.Command{
 	Short: "Creates Security Command Center findings from Gatekeeper and Policy Controller violations",
 	Long: `gatekeeper-securitycenter is:
 
-- A Kubernetes controller that creates Security Command Center
+- a Kubernetes controller that creates Security Command Center
   findings for violations reported by Gatekeeper/Policy Controller's
   audit controller; and
 
-- A command-line tool that creates a Security Command Center source
-  for Gatekeeper/Policy Controller, and that manages the IAM policy
-  of that source.`,
+- a command-line tool that creates and manages the IAM policies of
+  Security Command Center sources.`,
 }
 
 func init() {

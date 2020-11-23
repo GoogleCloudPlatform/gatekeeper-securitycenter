@@ -12,10 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.idea/
-.kpt-hydrated/
-.kpt-skaffold/
-.tmp-sink-dir/
-.vscode/
-/SHA256SUMS
-/gatekeeper-securitycenter*
+apiVersion: skaffold/v2beta9
+kind: Config
+build:
+  artifacts:
+  - image: ko://github.com/GoogleCloudPlatform/gatekeeper-securitycenter
+    custom:
+      buildCommand: ./build/skaffold.sh
+      dependencies:
+        paths:
+        - "go.mod"
+        - "**.go"
+  tagPolicy:
+    sha256: {}
+deploy:
+  kpt:
+    dir: .kpt-skaffold
+    live:
+      apply:
+        inventoryNamespace: gatekeeper-securitycenter

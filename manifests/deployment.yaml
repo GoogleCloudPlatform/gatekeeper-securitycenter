@@ -33,12 +33,14 @@ spec:
       serviceAccountName: gatekeeper-securitycenter-controller
       containers:
       - name: manager
-        image: gcr.io/cloud-solutions-images/gatekeeper-securitycenter:latest # {"$kpt-set":"image"}
+        image: docker.pkg.github.com/googlecloudplatform/gatekeeper-securitycenter/gatekeeper-securitycenter # {"$kpt-set":"image"}
         args:
         - findings
         - manager
         - --source=$(SOURCE)
         - --cluster=$(CLUSTER)
+        - --interval=120 # {"$kpt-set":"interval-flag"}
+        - --dry-run=false # {"$kpt-set":"dry-run-flag"}
         env:
         - name: SOURCE
           valueFrom:
@@ -51,14 +53,14 @@ spec:
               name: gatekeeper-securitycenter-config
               key: CLUSTER_NAME
         - name: DEBUG
-          value: "false"
+          value: "false" # {"$kpt-set":"debug-env"}
         resources:
           limits:
-            cpu: 100m
-            memory: 128Mi
+            cpu: 100m # {"$kpt-set":"limit-cpu"}
+            memory: 128Mi # {"$kpt-set":"limit-memory"}
           requests:
-            cpu: 30m
-            memory: 32Mi
+            cpu: 30m # {"$kpt-set":"request-cpu"}
+            memory: 32Mi # {"$kpt-set":"request-memory"}
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:

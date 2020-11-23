@@ -1,13 +1,30 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 name: Release
 
 on:
   push:
     tags:
-    - 'v*'
+    - 'v*-rc*'
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      CGO_ENABLED: '0'
+      GOFLAGS: '-mod=readonly'
 
     steps:
     - name: Checkout code
@@ -30,11 +47,8 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-go-
 
-    - name: Names
-      run: |
-        echo IMAGE_NAME=$(echo ${{ github.event.repository.name }} | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
-        echo IMAGE_REPO=$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
-        echo IMAGE_TAG=${GITHUB_REF##*/} >> $GITHUB_ENV
+    - name: Test
+      run: go test -v -count=1 -timeout=10m -vet="asmdecl,assign,atomic,bools,buildtag,cgocall,composites,copylocks,errorsas,httpresponse,loopclosure,lostcancel,nilfunc,printf,shift,stdmethods,structtag,tests,unmarshal,unreachable,unsafeptr,unusedresult" ./...
 
     - name: Build binaries
       run: |
@@ -45,6 +59,13 @@ jobs:
     - name: Create checksums
       run: shasum -a 256 gatekeeper-securitycenter_* > SHA256SUMS
 
+    - name: Image env vars
+      run: |
+        echo IMAGE_NAME=$(echo ${{ github.event.repository.name }} | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
+        echo IMAGE_REPO=$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
+        RC_TAG=${GITHUB_REF##*/}
+        echo TAG_NAME=${RC_TAG%%-rc*} >> $GITHUB_ENV
+
     - name: Install crane and ko
       run: |
         go get github.com/google/go-containerregistry/cmd/crane
@@ -54,16 +75,36 @@ jobs:
     - name: Build and push container images
       run: |
         $(go env GOPATH)/bin/crane auth login docker.pkg.github.com -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
-        $(go env GOPATH)/bin/ko publish . --base-import-paths --platform linux/amd64 --tags latest,$IMAGE_TAG
+        echo -n 'IMAGE_WITH_DIGEST=' >> $GITHUB_ENV
+        $(go env GOPATH)/bin/ko publish . --base-import-paths --platform linux/amd64 --tags latest,$TAG_NAME >> $GITHUB_ENV
       env:
         KO_DOCKER_REPO: docker.pkg.github.com/${{ env.IMAGE_REPO }}
 
     - name: Create release body file
       run: |
         echo '## Images' > ${{ runner.temp }}/body.md
-        echo "    gcr.io/cloud-solutions-images/$IMAGE_NAME:$IMAGE_TAG (multi-arch)" >> ${{ runner.temp }}/body.md
+        echo "    docker.pkg.github.com/$IMAGE_REPO/$IMAGE_NAME:$TAG_NAME (linux/amd64)" >> ${{ runner.temp }}/body.md
+        echo "    ${IMAGE_WITH_DIGEST##*@}"
         echo "" >> ${{ runner.temp }}/body.md
-        echo "    docker.pkg.github.com/$IMAGE_REPO/$IMAGE_NAME:$IMAGE_TAG (linux/amd64)" >> ${{ runner.temp }}/body.md
+        echo "    gcr.io/cloud-solutions-images/$IMAGE_NAME:$TAG_NAME (multi-arch)" >> ${{ runner.temp }}/body.md
+
+    - name: Create release branch
+      run: |
+        git checkout -B release-$TAG_NAME
+
+    - name: Set new image tag
+      uses: docker://gcr.io/kpt-dev/kpt:v0.37.0
+      with:
+        args: cfg set manifests image docker.pkg.github.com/${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }}
+
+    - name: Commit manifest with image tag
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git add manifests
+        git commit -m "$TAG_NAME"
+        git push --force origin release-$TAG_NAME
+        echo COMMITISH=$(git rev-parse HEAD) >> $GITHUB_ENV
 
     - name: Create release
       id: create_release
@@ -71,11 +112,12 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref }}
-        release_name: ${{ github.ref }}
+        tag_name: ${{ env.TAG_NAME }}
+        release_name: ${{ env.TAG_NAME }}
         body_path: ${{ runner.temp }}/body.md
+        commitish: ${{ env.COMMITISH }}
 
-    - name: Upload asset darwin amd64
+    - name: Upload binary darwin amd64
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
