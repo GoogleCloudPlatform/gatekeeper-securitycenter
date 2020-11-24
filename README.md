@@ -17,7 +17,23 @@
     Security Command Center
     [sources](https://cloud.google.com/security-command-center/docs/reference/rest/v1/organizations.sources).
 
-## Usage
+## Installing
+
+To install the `gatekeeper-securitycenter` controller in your cluster, you
+must provide the following inputs:
+
+-   the full name of the Security Command Center source where the controller
+    should report findings, in the format
+    `organizations/[ORGANIZATION_ID]/sources/[SOURCE_ID]`; and
+
+-   if you are using [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity)
+    (recommended), the Google service account to bind to the Kubernetes
+    service account of the controller. The Google service account must
+    have the [Security Center Findings Editor](https://cloud.google.com/iam/docs/understanding-roles#security-center-roles)
+    role or equivalent permissions on the Security Command Center source, or
+    at the organization level.
+
+You can use the <scripts/setup.sh> to create these resources.
 
 See the accompanying [tutorial](docs/tutorial.md) for step-by-step
 instructions on how to create the Security Command Center source, setting up
@@ -46,25 +62,6 @@ does not require a local Docker daemon.
 
 If you would like to use a different base image, edit the value of
 `defaultBaseImage` in the file [`.ko.yaml`](.ko.yaml).
-
-## Installing
-
-To install the `gatekeeper-securitycenter` controller in your cluster, you
-must provide the following inputs:
-
--   the full name of the Security Command Center source where the controller
-    should report findings, in the format
-    `organizations/[ORGANIZATION_ID]/sources/[SOURCE_ID]`; and
-
--   if you are using [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity)
-    (recommended), the Google service account to bind to the Kubernetes
-    service account of the controller. The Google service account must
-    have the [Security Center Findings Editor](https://cloud.google.com/iam/docs/understanding-roles#security-center-roles)
-    role or equivalent permissions on the Security Command Center source, or
-    at the organization level.
-
-See the accompanying [tutorial](docs/tutorial.md) for step-by-step
-instructions.
 
 ## Development
 
