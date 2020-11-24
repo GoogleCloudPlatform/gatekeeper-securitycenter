@@ -978,19 +978,41 @@ findings, wait a few minutes and try again.
 
 ## Automating the setup
 
-To automate some of the manual steps in this tutorial, you can download and
-execute a script that performs the following tasks:
+To automate some of the steps in this tutorial, you can download and run shell
+scripts. See the comments in each of the scripts for instructions on how to
+customize their behavior.
+
+### Automating cluster creation
+
+1.  In Cloud Shell, download the `cluster.sh` script. This script creates a
+    development GKE cluster with Workload Identity enabled, and installs
+    Gatekeeper:
+
+    ```bash
+    curl -sLO https://raw.githubusercontent.com/GoogleCloudPlatform/gatekeeper-securitycenter/main/scripts/cluster.sh
+    ```
+
+    **Note:** This script is not intended for production use.
+
+2.  Run the cluster.sh script:
+
+    ```bash
+    source cluster.sh
+    ```
+
+    By sourcing the script, you export the `CLUSTER_NAME` environment variable.
+    You can use this variable when you
+    [deploy the controller to your GKE cluster](#creating-findings-using-a-kubernetes-controller).
+
+### Automating Cloud IAM setup and source creation
+
+You can also download and run a setup script that performs the following tasks:
 
 -   Creates the sources admin and findings editor Google service accounts.
 -   Grants the Cloud IAM role bindings to the Google service accounts.
 -   Grants permissions to allow your Google identity to impersonate the Google
     service accounts.
 -   Creates the Security Command Center source.
-
-Before you proceed,
-[create a GKE cluster with Workload Identity](#creating-a-gke-cluster),
-and [install Policy Controller](#installing-policy-controller) or
-[Gatekeeper](#installing-gatekeeper).
 
 1.  Download the setup script:
 
@@ -1005,12 +1027,9 @@ and [install Policy Controller](#installing-policy-controller) or
     ```
 
     By sourcing the script, you export environment variables for the Security
-    Command Center source (`$SOURCE_NAME`) and the findings editor Google
-    service account (`$FINDINGS_EDITOR_SA`). You need these values to deploy
+    Command Center source (`SOURCE_NAME`) and the findings editor Google
+    service account (`FINDINGS_EDITOR_SA`). You need these values to deploy
     the controller to your GKE cluster.
-
-See the comments in the script for instructions on how to customize its
-behavior.
 
 ## Cleaning up
 

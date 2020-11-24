@@ -71,8 +71,12 @@ To make changes to `gatekeeper-securitycenter`:
 
 2.  Install [`kpt`](https://googlecontainertools.github.io/kpt/installation/).
 
-3.  Create a GKE cluster and install either Policy Controller or Gatekeeper as
-    per the [tutorial](docs/tutorial.md).
+3.  Create a development GKE cluster with Workload Identity, and install
+    Gatekeeper:
+
+    ```bash
+    source scripts/cluster.sh
+    ```
 
 4.  Create your Security Command Center source (`$SOURCE_NAME`) and set up your
     findings editor Google service account (`$FINDINGS_EDITOR_SA`) with the
