@@ -65,7 +65,7 @@ This diagram shows the components involved in this tutorial:
 
 If you want to see how this can also apply to policy violations for Google
 Cloud resources, check out the
-[tutorial on how to create policy-compliant Google Cloud resources using Config Connector and Policy Controller/Gatekeeper](policy-compliant.md).
+[tutorial on how to create policy-compliant Google Cloud resources using Config Connector with Policy Controller or Gatekeeper](config-connector-gatekeeper-tutorial.md).
 
 ## Objectives
 
@@ -182,7 +182,7 @@ with
     You need this role later to deploy the Kubernetes controller. You also need
     it if you install the open source Gatekeeper distribution.
 
-## Install Policy Controller
+## Installing Policy Controller
 
 If you have an [Anthos entitlement](https://cloud.google.com/anthos/pricing),
 follow the steps in this section to install Policy Controller. If not, skip to
@@ -222,7 +222,19 @@ the next section to install the open source Gatekeeper distribution instead.
     kubectl apply -f config-management.yaml
     ```
 
-## Install Gatekeeper
+4.  Wait for Policy Controller to be ready, this could take a few minutes:
+
+    ```bash
+    kubectl rollout status deploy gatekeeper-controller-manager \
+        -n gatekeeper-system
+    ```
+
+    **Note:** It can take some time for the Config Management operator to
+    create the Policy Controller namespace and deployments. While this is
+    happening, the `kubectl rollout status` command may return an error. If
+    this happens, wait a minute and try again.
+
+## Installing Gatekeeper
 
 If you don't have an Anthos entitlement, you can install the open source
 Gatekeeper distribution instead of Policy Controller. If you installed Policy
@@ -239,6 +251,13 @@ Controller in the previous section, skip to the
 
     ```bash
     kubectl apply -f https://raw.githubusercontent.com/open-policy-agent/gatekeeper/$GATEKEEPER_VERSION/deploy/gatekeeper.yaml
+    ```
+
+3.  Wait for the Gatekeeper controller manager to be ready:
+
+    ```bash
+    kubectl rollout status deploy gatekeeper-controller-manager \
+        -n gatekeeper-system
     ```
 
 ## Creating a policy
@@ -628,7 +647,7 @@ existing finding to _inactive_.
     to customize the resource manifests for your environment.
 
     **Note:** See the `kpt` website for alternative
-    [installation instructions](https://googlecontainertools.github.io/kpt/installation/)
+    [installation instructions](https://googlecontainertools.github.io/kpt/installation/),
     such as using `brew` for macOS.
 
 3.  Fetch the latest version of the `kpt` package for
@@ -956,6 +975,42 @@ findings, wait a few minutes and try again.
     -   [Gatekeeper debugging](https://github.com/open-policy-agent/gatekeeper#debugging)
     -   [GKE troubleshooting](https://cloud.google.com/kubernetes-engine/docs/troubleshooting)
     -   [Troubleshooting Kubernetes clusters](https://kubernetes.io/docs/tasks/debug-application-cluster/debug-cluster/)
+
+## Automating the setup
+
+To automate some of the manual steps in this tutorial, you can download and
+execute a script that performs the following tasks:
+
+-   Creates the sources admin and findings editor Google service accounts.
+-   Grants the Cloud IAM role bindings to the Google service accounts.
+-   Grants permissions to allow your Google identity to impersonate the Google
+    service accounts.
+-   Creates the Security Command Center source.
+
+Before you proceed,
+[create a GKE cluster with Workload Identity](#creating-a-gke-cluster),
+and [install Policy Controller](#installing-policy-controller) or
+[Gatekeeper](#installing-gatekeeper).
+
+1.  Download the setup script:
+
+    ```bash
+    curl -sLO https://raw.githubusercontent.com/GoogleCloudPlatform/gatekeeper-securitycenter/scripts/setup.sh
+    ```
+
+2.  Execute the script:
+
+    ```bash
+    source setup.sh
+    ```
+
+    By sourcing the script, you export environment variables for the Security
+    Command Center source (`$SOURCE_NAME`) and the findings editor Google
+    service account (`$FINDINGS_EDITOR_SA`). You need these values to deploy
+    the controller to your GKE cluster.
+
+See the comments in the script for instructions on how to customize its
+behavior.
 
 ## Cleaning up
 

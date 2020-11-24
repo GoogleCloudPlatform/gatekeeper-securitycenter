@@ -1,4 +1,4 @@
-# gatekeeper-securitycenter kpt package
+# `gatekeeper-securitycenter` `kpt` package
 
 ## Description
 
