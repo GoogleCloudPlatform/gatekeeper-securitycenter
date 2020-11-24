@@ -70,16 +70,15 @@ VERSION=${VERSION:-$(curl -s https://api.github.com/repos/GoogleCloudPlatform/ga
 OS=${OS:-$(go env GOOS)}
 ARCH=${ARCH:-$(go env GOARCH)}
 
-if [[ ! -x "gatekeeper-securitycenter-$VERSION" ]]
-then
+if [[ ! -x "gatekeeper-securitycenter-$VERSION" ]]; then
+    >&2 echo Downloading "gatekeeper-securitycenter-$VERSION"
     curl -sLo "gatekeeper-securitycenter-$VERSION" "https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter/releases/download/${VERSION}/gatekeeper-securitycenter_${OS}_${ARCH}"
     chmod +x "gatekeeper-securitycenter-$VERSION"
 fi
 
 # Create the sources admin Google service account
 
-if ! gcloud iam service-accounts describe "$SOURCES_ADMIN_SA" > /dev/null 2>&1
-then
+if ! gcloud iam service-accounts describe "$SOURCES_ADMIN_SA" > /dev/null 2>&1 ; then
     >&2 echo Creating Google service account "$SOURCES_ADMIN_SA"
     gcloud iam service-accounts create "$SOURCES_ADMIN_SA_NAME" \
         --display-name "Security Command Center sources admin"
@@ -110,8 +109,7 @@ SOURCE_NAME=${SOURCE_NAME:-$("./gatekeeper-securitycenter-$VERSION" sources crea
 
 # Create the findings editor Google service account
 
-if ! gcloud iam service-accounts describe "$FINDINGS_EDITOR_SA" > /dev/null 2>&1
-then
+if ! gcloud iam service-accounts describe "$FINDINGS_EDITOR_SA" > /dev/null 2>&1 ; then
     >&2 echo Creating Google service account "$FINDINGS_EDITOR_SA"
     gcloud iam service-accounts create "$FINDINGS_EDITOR_SA_NAME" \
         --display-name "Security Command Center Gatekeeper findings editor"
@@ -140,10 +138,6 @@ gcloud iam service-accounts add-iam-policy-binding \
     "$FINDINGS_EDITOR_SA" \
     --member "user:$CLOUDSDK_CORE_ACCOUNT" \
     --role roles/iam.serviceAccountTokenCreator > /dev/null
-
-export SOURCES_ADMIN_SA
-export FINDINGS_EDITOR_SA
-export SOURCE_NAME
 
 >&2 echo ""
 echo SOURCES_ADMIN_SA="$SOURCES_ADMIN_SA"

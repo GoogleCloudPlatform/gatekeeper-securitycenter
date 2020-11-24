@@ -17,7 +17,15 @@
     Security Command Center
     [sources](https://cloud.google.com/security-command-center/docs/reference/rest/v1/organizations.sources).
 
-## Installing
+## Tutorial
+
+See the accompanying [tutorial](docs/tutorial.md) for detailed explanation and
+step-by-step instructions on how to create a Security Command Center source,
+set up the Google service accounts with the required permissions, and
+installing the controller resources in a Google Kubernetes Engine (GKE)
+cluster.
+
+## Install
 
 To install the `gatekeeper-securitycenter` controller in your cluster, you
 must provide the following inputs:
@@ -26,21 +34,26 @@ must provide the following inputs:
     should report findings, in the format
     `organizations/[ORGANIZATION_ID]/sources/[SOURCE_ID]`; and
 
--   if you are using [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity)
+-   if you use
+    [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity)
     (recommended), the Google service account to bind to the Kubernetes
     service account of the controller. The Google service account must
-    have the [Security Center Findings Editor](https://cloud.google.com/iam/docs/understanding-roles#security-center-roles)
-    role or equivalent permissions on the Security Command Center source, or
-    at the organization level.
+    have the
+    [Security Center Findings Editor](https://cloud.google.com/iam/docs/understanding-roles#security-center-roles)
+    role or equivalent permissions on the Security Command Center source, or at
+    the organization level.
 
-You can use the <scripts/setup.sh> to create these resources.
+You can run the provided [setup script](scripts/setup.sh) to create these
+resources and set up the necessary permissions. To run this script, you must
+have an appropriate role for Security Command Center at the organization level,
+such as
+[Security Center Admin Editor](https://cloud.google.com/security-command-center/docs/access-control).
 
-See the accompanying [tutorial](docs/tutorial.md) for step-by-step
-instructions on how to create the Security Command Center source, setting up
-the Google service account with the required permissions, and installing the
-controller resources in a Google Kubernetes Engine (GKE) cluster.
+After you have created the resources, you can deploy the controller by running
+the provided <scripts/deploy.sh> script, or you can follow the steps in the
+[`kpt` package](manifests/README.md).
 
-## Building
+## Build
 
 Build the command-line tool for your platform:
 
@@ -48,7 +61,7 @@ Build the command-line tool for your platform:
 go build .
 ```
 
-Build and publish the container image for the controller using `ko`:
+Build and publish the container image for the controller:
 
 ```bash
 (cd tools ; go get github.com/google/ko/cmd/ko)
@@ -72,10 +85,11 @@ To make changes to `gatekeeper-securitycenter`:
 2.  Install [`kpt`](https://googlecontainertools.github.io/kpt/installation/).
 
 3.  Create a development GKE cluster with Workload Identity, and install
-    Gatekeeper:
+    Gatekeeper. If you like, you can use the provided `dev-cluster.sh` shell
+    script:
 
     ```bash
-    source scripts/cluster.sh
+    source scripts/dev-cluster.sh
     ```
 
 4.  Create your Security Command Center source (`$SOURCE_NAME`) and set up your

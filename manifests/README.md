@@ -60,14 +60,18 @@ Details: https://googlecontainertools.github.io/kpt/reference/cfg/set/
 
 If your Google Kubernetes Engine (GKE) cluster uses
 [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity),
-add an annotation for the Google service account `$GSA_EMAIL` to bind it to the
-`gatekeeper-securitycenter-controller` Kubernetes service account:
+add an annotation for the Google service account `$FINDINGS_EDITOR_SA` to bind
+it to the `gatekeeper-securitycenter-controller` Kubernetes service account:
 
 ```bash
 kpt cfg annotate manifests \
     --kind ServiceAccount --name gatekeeper-securitycenter-controller \
-    --kv iam.gke.io/gcp-service-account=$GSA_EMAIL
+    --kv iam.gke.io/gcp-service-account=$FINDINGS_EDITOR_SA
 ```
+
+The Google service account must have the
+[Security Center Findings Editor](https://cloud.google.com/iam/docs/understanding-roles#security-center-roles)
+Cloud IAM role on the source or at the organization level.
 
 Details: https://googlecontainertools.github.io/kpt/reference/cfg/annotate/
 

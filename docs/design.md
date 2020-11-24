@@ -1,5 +1,7 @@
 # `gatekeeper-securitycenter` controller design
 
+![Architecture](architecture.svg)
+
 The `gatekeeper-securitycenter` controller is based on
 [`client-go`](https://github.com/kubernetes/client-go).
 

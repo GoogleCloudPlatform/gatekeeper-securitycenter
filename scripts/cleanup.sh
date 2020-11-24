@@ -53,8 +53,7 @@ VERSION=${VERSION:-$(curl -s https://api.github.com/repos/GoogleCloudPlatform/ga
 OS=${OS:-$(go env GOOS)}
 ARCH=${ARCH:-$(go env GOARCH)}
 
-if [[ ! -x "gatekeeper-securitycenter-$VERSION" ]]
-then
+if [[ ! -x "gatekeeper-securitycenter-$VERSION" ]]; then
     curl -sLo "gatekeeper-securitycenter-$VERSION" "https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter/releases/download/${VERSION}/gatekeeper-securitycenter_${OS}_${ARCH}"
     chmod +x "gatekeeper-securitycenter-$VERSION"
 fi
