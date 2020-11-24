@@ -2,7 +2,7 @@
 
 `gatekeeper-securitycenter` is
 
--   A Kubernetes controller that creates
+-   a Kubernetes controller that creates
     [Security Command Center](https://cloud.google.com/security-command-center)
     [findings](https://cloud.google.com/security-command-center/docs/reference/rest/v1/organizations.sources.findings)
     for violations reported by the
@@ -13,7 +13,7 @@
     [Open Policy Agent (OPA) Gatekeeper](https://github.com/open-policy-agent/gatekeeper);
     and
 
--   A command-line tool that creates and manages the IAM policies of
+-   a command-line tool that creates and manages the IAM policies of
     Security Command Center
     [sources](https://cloud.google.com/security-command-center/docs/reference/rest/v1/organizations.sources).
 
@@ -70,46 +70,55 @@ instructions.
 
 To make changes to `gatekeeper-securitycenter`:
 
-1.  Create your Security Command Center source (`$SOURCE_NAME`) and set up your
-    Google service account (`$GATEKEEPER_FINDINGS_EDITOR_SA`) and GKE cluster
-    as per the [tutorial](docs/tutorial.md).
+1.  Install [Skaffold](https://skaffold.dev/docs/install/).
 
-2.  Install [Skaffold](https://skaffold.dev/docs/install/).
+2.  Install [`kpt`](https://googlecontainertools.github.io/kpt/installation/).
 
-3.  Create a directory to store your development manifests:
+3.  Create a GKE cluster and install either Policy Controller or Gatekeeper as
+    per the [tutorial](docs/tutorial.md).
+
+4.  Create your Security Command Center source (`$SOURCE_NAME`) and set up your
+    findings editor Google service account (`$FINDINGS_EDITOR_SA`) with the
+    required permissions:
+
+    ```bash
+    source scripts/setup.sh
+    ```
+
+    By sourcing the script, you export the `$SOURCE_NAME` and
+    `$FINDINGS_EDITOR_SA` environment variables for use in later steps.
+
+5.  Create a copy of the `manifests` directory called `.kpt-skaffold`. This
+    directory stores your manifests for development purposes:
 
     ```bash
     cp -r manifests .kpt-skaffold
     ```
 
-4.  Set the Security Command Center source name:
+6.  Set the name of your Security Command Center source:
 
     ```bash
     kpt cfg set .kpt-skaffold source $SOURCE_NAME
     ```
 
-5.  Set the image name to the Go import path, with the prefix `ko://`:
+7.  Set the image name to the Go import path, with the prefix `ko://`:
 
     ```bash
     kpt cfg set .kpt-skaffold image ko://github.com/GoogleCloudPlatform/gatekeeper-securitycenter
     ```
 
-11. If you use a GKE cluster with Workload Identity, add the Workload Identity
+8.  If you use a GKE cluster with Workload Identity, add the Workload Identity
     annotation to the Kubernetes service account used by the controller:
 
     ```bash
     kpt cfg annotate .kpt-skaffold \
-        --kind ServiceAccount --name gatekeeper-securitycenter-controller \
-        --kv iam.gke.io/gcp-service-account=$GATEKEEPER_FINDINGS_EDITOR_SA
+        --kind ServiceAccount \
+        --name gatekeeper-securitycenter-controller \
+        --namespace gatekeeper-securitycenter \
+        --kv iam.gke.io/gcp-service-account=$FINDINGS_EDITOR_SA
     ```
 
-12. Create a ConfigMap to track resources applied to your development cluster:
-
-    ```bash
-    kpt live init .kpt-skaffold --namespace gatekeeper-securitycenter
-    ```
-
-13. Start the Skaffold development mode watch loop:
+9.  Deploy the resources and start the Skaffold development mode watch loop:
 
     ```bash
     skaffold dev

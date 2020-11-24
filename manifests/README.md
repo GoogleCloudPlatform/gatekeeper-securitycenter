@@ -1,4 +1,4 @@
-# gatekeeper-securitycenter
+# gatekeeper-securitycenter kpt package
 
 ## Description
 
@@ -9,7 +9,7 @@
 ### Fetch the package
 
 ```bash
-kpt pkg get https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter/manifests gatekeeper-securitycenter
+kpt pkg get https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter/manifests manifests
 ```
 
 Details: https://googlecontainertools.github.io/kpt/reference/pkg/get/
@@ -17,7 +17,7 @@ Details: https://googlecontainertools.github.io/kpt/reference/pkg/get/
 ### View package contents
 
 ```bash
-kpt cfg tree gatekeeper-securitycenter
+kpt cfg tree manifests
 ```
 
 Details: https://googlecontainertools.github.io/kpt/reference/cfg/tree/
@@ -25,7 +25,7 @@ Details: https://googlecontainertools.github.io/kpt/reference/cfg/tree/
 ### List setters
 
 ```bash
-kpt cfg list-setters gatekeeper-securitycenter
+kpt cfg list-setters manifests
 ```
 
 Details: https://googlecontainertools.github.io/kpt/reference/cfg/list-setters/
@@ -35,18 +35,23 @@ Details: https://googlecontainertools.github.io/kpt/reference/cfg/list-setters/
 1.  Set the Security Command Center source name:
 
     ```bash
-    kpt cfg set gatekeeper-securitycenter \
-        source organizations/$ORGANIZATION_ID/sources/$SOURCE_ID
+    kpt cfg set manifests source $SOURCE_NAME
     ```
 
-    Where `$ORGANIZATION_ID` is your Google Cloud organization ID, and
-    `$SOURCE_ID` is your Security Command Center source ID.
+    Where `$SOURCE_NAME` is your Security Command Center source in the format
+    `organizations/$ORGANIZATION_ID/sources/$SOURCE_ID`.
 
 2.  Set the optional cluster name. You can use any name you like. As an
     example, you can use your current `kubectl` context name:
 
     ```bash
-    kpt cfg set gatekeeper-securitycenter cluster $(kubectl config current-context)
+    kpt cfg set manifests cluster $(kubectl config current-context)
+    ```
+
+3.  If you build your own container image, you can change the `image` value:
+
+    ```bash
+    kpt cfg set manifests image [YOUR_IMAGE_NAME]
     ```
 
 Details: https://googlecontainertools.github.io/kpt/reference/cfg/set/
@@ -59,19 +64,25 @@ add an annotation for the Google service account `$GSA_EMAIL` to bind it to the
 `gatekeeper-securitycenter-controller` Kubernetes service account:
 
 ```bash
-kpt cfg annotate gatekeeper-securitycenter \
+kpt cfg annotate manifests \
     --kind ServiceAccount --name gatekeeper-securitycenter-controller \
     --kv iam.gke.io/gcp-service-account=$GSA_EMAIL
 ```
 
 Details: https://googlecontainertools.github.io/kpt/reference/cfg/annotate/
 
+### Initialize the package
+
+```bash
+kpt live init manifests --namespace gatekeeper-securitycenter
+```
+
+Details: https://googlecontainertools.github.io/kpt/reference/live/init/
+
 ### Apply the package
 
-```
-kpt live init gatekeeper-securitycenter --namespace gatekeeper-securitycenter
-
-kpt live apply gatekeeper-securitycenter --reconcile-timeout 2m --output table
+```bash
+kpt live apply manifests --reconcile-timeout 2m --output table
 ```
 
-Details: https://googlecontainertools.github.io/kpt/reference/live/
+Details: https://googlecontainertools.github.io/kpt/reference/live/apply/

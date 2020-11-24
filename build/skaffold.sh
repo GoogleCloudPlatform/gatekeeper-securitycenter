@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Skaffold uses this script to build the container image
+
 set -euf -o pipefail
 
 if ! [ -x "$(command -v ko)" ]; then

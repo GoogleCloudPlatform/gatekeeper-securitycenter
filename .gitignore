@@ -17,5 +17,5 @@
 .kpt-skaffold/
 .tmp-sink-dir/
 .vscode/
-/SHA256SUMS
-/gatekeeper-securitycenter*
+SHA256SUMS
+gatekeeper-securitycenter*
