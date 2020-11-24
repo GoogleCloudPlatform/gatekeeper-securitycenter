@@ -13,11 +13,6 @@
 # limitations under the License.
 
 steps:
-- id: env
-  name: $_GO_IMAGE
-  entrypoint: go
-  args:
-  - env
 - id: ko
   name: $_GO_IMAGE
   dir: tools
@@ -27,22 +22,24 @@ steps:
   - github.com/google/ko/cmd/ko
 - id: image
   name: $_GO_IMAGE
-  entrypoint: /workspace/.gopath/bin/ko
+  entrypoint: bash
   args:
-  - publish
-  - .
-  - --base-import-paths
-  - --platform=all
-  - --tags=latest,$TAG_NAME
+  - -eEuo
+  - pipefail
+  - -c
+  - |-
+    export GOFLAGS="-mod=readonly -ldflags=-X=$(go list)/cmd/version.Version=$TAG_NAME"
+    go version
+    go env
+    /workspace/.gopath/bin/ko publish --base-import-paths --platform linux/amd64 --tags latest,$TAG_NAME .
   env:
   - 'KO_DOCKER_REPO=gcr.io/$_PROJECT_ID'
 options:
   dynamic_substitutions: true
   env:
   - 'CGO_ENABLED=0'
-  - 'GOCACHE=/workspace/.gocache'
-  - 'GOFLAGS=-mod=readonly'
   - 'GOPATH=/workspace/.gopath'
+  - 'GOROOT=/usr/local/go'
   - 'PROJECT_ID=$PROJECT_ID'
   - 'TAG_NAME=$TAG_NAME'
   logging: GCS_ONLY

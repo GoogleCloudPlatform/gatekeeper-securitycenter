@@ -21,6 +21,7 @@ import (
 
 	"github.com/GoogleCloudPlatform/gatekeeper-securitycenter/cmd/findings"
 	"github.com/GoogleCloudPlatform/gatekeeper-securitycenter/cmd/sources"
+	"github.com/GoogleCloudPlatform/gatekeeper-securitycenter/cmd/version"
 	"github.com/GoogleCloudPlatform/gatekeeper-securitycenter/pkg/signals"
 
 	// blank import for all k8s auth plugins
@@ -45,6 +46,7 @@ func init() {
 	rootCmd.AddCommand(
 		findings.Cmd,
 		sources.Cmd,
+		version.Cmd,
 	)
 }
 
