@@ -178,7 +178,7 @@ func (c *Client) CreateFinding(ctx context.Context, req *securitycenterpb.Create
 		c.log.Info("(dry-run) skip create finding", "findingIDToName", fmt.Sprintf("%v/findings/%v", req.Parent, req.FindingId), "constraintTemplate", req.Finding.Category, "resourceName", req.Finding.ResourceName, "constraintUri", req.Finding.ExternalUri)
 		return nil
 	}
-	c.log.Info("create finding", "findingIDToName", fmt.Sprintf("%v/findings/%v", req.Parent, req.FindingId), "constraintTemplate", req.Finding.Category, "resourceName", req.Finding.ResourceName, "constraintUri", req.Finding.ExternalUri)
+	c.log.Info("create finding", "findingName", fmt.Sprintf("%v/findings/%v", req.Parent, req.FindingId), "constraintTemplate", req.Finding.Category, "resourceName", req.Finding.ResourceName, "constraintUri", req.Finding.ExternalUri)
 	ctx, cancel := context.WithTimeout(ctx, c.timeout)
 	defer cancel()
 	_, err := c.client.CreateFinding(ctx, req)

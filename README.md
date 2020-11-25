@@ -78,18 +78,16 @@ If you would like to use a different base image, edit the value of
 
 ## Development
 
-To make changes to `gatekeeper-securitycenter`:
-
 1.  Install [Skaffold](https://skaffold.dev/docs/install/).
 
 2.  Install [`kpt`](https://googlecontainertools.github.io/kpt/installation/).
 
 3.  Create a development GKE cluster with Workload Identity, and install
-    Gatekeeper. If you like, you can use the provided `dev-cluster.sh` shell
-    script:
+    Policy Controller or Gatekeeper. If you like, you can use the provided
+    `dev-cluster.sh` shell script:
 
     ```bash
-    source scripts/dev-cluster.sh
+    ./scripts/dev-cluster.sh
     ```
 
 4.  Create your Security Command Center source (`$SOURCE_NAME`) and set up your
@@ -97,11 +95,11 @@ To make changes to `gatekeeper-securitycenter`:
     required permissions:
 
     ```bash
-    source scripts/setup.sh
+    ./scripts/setup.sh
     ```
 
-    By sourcing the script, you export the `$SOURCE_NAME` and
-    `$FINDINGS_EDITOR_SA` environment variables for use in later steps.
+    The script prints out values for `$SOURCE_NAME` and `$FINDINGS_EDITOR_SA`.
+    Set these as environment variables for use in later steps.
 
 5.  Create a copy of the `manifests` directory called `.kpt-skaffold`. This
     directory stores your manifests for development purposes:

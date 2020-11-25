@@ -65,7 +65,7 @@ This diagram shows the components involved in this tutorial:
 
 If you want to see how this can also apply to policy violations for Google
 Cloud resources, check out the
-[tutorial on how to create policy-compliant Google Cloud resources using Config Connector with Policy Controller or Gatekeeper](config-connector-gatekeeper-tutorial.md).
+[tutorial on how to create policy-compliant Google Cloud resources using Config Connector with Policy Controller or Gatekeeper](https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter/blob/main/docs/config-connector-gatekeeper-tutorial.md).
 
 ## Objectives
 
@@ -270,46 +270,44 @@ The constraint template contains the policy logic, and the constraint specifies
 where the policy applies and input parameters to the policy logic.
 
 In this section you create a policy for Kubernetes pods and a pod that violates
-the policy. The policy requires that containers used in pod specifications are
-referenced using image digests.
+the policy. The policy requires that pod specifications use container images
+from approved repositories.
 
-1.  Clone the Gatekeeper library repository and navigate to the repository
-    directory:
+1.  Clone the Gatekeeper library repository, navigate to the repository
+    directory, and check out a known commit:
 
     ```bash
     git clone https://github.com/open-policy-agent/gatekeeper-library.git ~/gatekeeper-library
 
     cd ~/gatekeeper-library
+
+    git checkout ce24dd6802b8c845f80a27731b9095cc0864726f
     ```
 
-2.  Create a namespace called `digest-required` for the pod:
+2.  Create a pod called `nginx-disallowed` in the `default` namespace:
 
     ```bash
-    kubectl create ns digest-required
+    kubectl apply --namespace default -f \
+        library/general/allowedrepos/samples/repo-must-be-openpolicyagent/example_disallowed.yaml
     ```
 
-3.  Create the pod:
+    This pod uses a container image from a repository that is not approved by
+    the policy.
+
+3.  Create a constraint template called `k8sallowedrepos`:
 
     ```bash
-    kubectl apply -f library/general/imagedigests/example.yaml
+    kubectl apply -f library/general/allowedrepos/template.yaml
     ```
 
-    This namespace does not have the label required by the constraint you
-    create later.
-
-4.  Create the `K8sImageDigests` constraint template:
+14. Create a constraint called `repo-is-openpolicyagent`:
 
     ```bash
-    kubectl apply -f library/general/imagedigests/template.yaml
+    kubectl apply -f \
+        library/general/allowedrepos/samples/repo-must-be-openpolicyagent/constraint.yaml
     ```
 
-5.  Create the constraint:
-
-    ```bash
-    kubectl apply -f library/general/imagedigests/constraint.yaml
-    ```
-
-    The constraint only applies to the digest-required namespace.
+    This constraint applies to all pods in the `default` namespace.
 
 ## Auditing constraints
 
@@ -333,9 +331,9 @@ to the constraint.
       {
         "enforcementAction": "deny",
         "kind": "Pod",
-        "message": "container <opa> uses an image without a digest <openpolicyagent/opa:0.9.2>",
-        "name": "opa",
-        "namespace": "digest-required"
+        "message": "container <nginx> has an invalid image repo <nginx>, allowed repos are [\"openpolicyagent\"]",
+        "name": "nginx-disallowed",
+        "namespace": "default"
       }
     ]
     ```
@@ -345,7 +343,7 @@ to the constraint.
     the constraint. The audit runs every minute by default.
 
 **Note:** Policy Controller and Gatekeeper have a
-[default limit of 20 reported violations per constraint](https://github.com/open-policy-agent/gatekeeper#audit).
+[default limit on the number of reported violations per constraint](https://github.com/open-policy-agent/gatekeeper#audit).
 
 ## Creating a Security Command Center source
 
@@ -383,8 +381,9 @@ Gatekeeper.
     Cloud Identity and Access Management (IAM) role to the sources admin
     Google service account at the organization level:
 
-    ```
-    gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
+    ```bash
+    gcloud organizations add-iam-policy-binding \
+        $ORGANIZATION_ID \
         --member "serviceAccount:$SOURCES_ADMIN_SA" \
         --role roles/securitycenter.sourcesAdmin
     ```
@@ -393,12 +392,13 @@ Gatekeeper.
     [`securitycenter.sources.*`](https://cloud.google.com/iam/docs/permissions-reference)
     permissions required to administer sources.
 
-3.  Grant the
+4.  Grant the
     [Service Usage Consumer](https://cloud.google.com/iam/docs/understanding-roles#service-usage-roles)
     role to the sources Google service account at the organization level:
 
     ```bash
-    gcloud organizations add-iam-policy-binding $ORGANIZATION_ID \
+    gcloud organizations add-iam-policy-binding \
+        $ORGANIZATION_ID \
         --member "serviceAccount:$SOURCES_ADMIN_SA" \
         --role roles/serviceusage.serviceUsageConsumer
     ```
@@ -410,11 +410,11 @@ Gatekeeper.
     the Google service account when using Google Cloud client libraries, as
     long as the other identities have the necessary permissions.
 
-4.  Grant your user identity the
+5.  Grant your user identity the
     [Service Account Token Creator](https://cloud.google.com/iam/docs/understanding-roles#service-accounts-roles)
     role for the sources admin Google service account:
 
-    ```bah
+    ```bash
     gcloud iam service-accounts add-iam-policy-binding \
         $SOURCES_ADMIN_SA \
         --member "user:$(gcloud config get-value account)" \
@@ -425,7 +425,7 @@ Gatekeeper.
     [impersonate](https://cloud.google.com/iam/docs/impersonating-service-accounts)
     the Google service account.
 
-5.  Download the latest version of the `gatekeeper-securitycenter` command-line
+6.  Download the latest version of the `gatekeeper-securitycenter` command-line
     tool for your platform:
 
     ```bash
@@ -439,9 +439,9 @@ Gatekeeper.
     ```
 
     **Note:** If you prefer to build your own binary, follow the instructions
-    in the [`README.md`](../README.md).
+    in the [`README.md`](https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter/blob/main/README.md#build).
 
-6.  Use the `gatekeeper-securitycenter` tool to create a Security Command
+7.  Use the `gatekeeper-securitycenter` tool to create a Security Command
     Center source for your organization. Capture the full source name in an
     exported environment variable:
 
@@ -456,6 +456,10 @@ Gatekeeper.
     This command creates a source with the display name **Gatekeeper**. This
     display name is visible in the Security Command Center console. You can use
     a different display name and description if you like.
+
+    If you get a response with the error message
+    `The caller does not have permission`, wait a minute and try again. This
+    can happen if the Cloud IAM bindings haven't taken effect yet.
 
 ## Creating findings using the command line
 
@@ -536,38 +540,40 @@ part of a build pipeline or scheduled task.
     by default. If you want to use a different kubeconfig file, use the
     `-kubeconfig` flag.
 
+    <walkthrough-alt>
+
     The output looks similar to this:
 
     ```terminal
     [
       {
-        "finding_id": "445f336faf70c3b229cb4c6fa28c71e",
+        "finding_id": "0be44bcf181ef03162eed40126a500a0",
         "finding": {
-          "resource_name": "https://[apiserver]/api/v1/namespaces/digest-required/pods/opa",
+          "resource_name": "https://[apiserver]/api/v1/namespaces/default/pods/    nginx-disallowed",
           "state": 1,
-          "category": "K8sImageDigests",
-          "external_uri": "https://[apiserver]/apis/constraints.gatekeeper.sh/v1beta1/k8simagedigests/container-image-must-have-digest",
+          "category": "K8sAllowedRepos",
+          "external_uri": "https://[apiserver]/apis/constraints.gatekeeper.sh/v1beta1/k8sallowedrepos/repo-is-openpolicyagent",
           "source_properties": {
             "Cluster": "",
-            "ConstraintName": "container-image-must-have-digest",
-            "ConstraintSelfLink": "https://[apiserver]/apis/constraints.gatekeeper.sh/v1beta1/k8simagedigests/container-image-must-have-digest",
-            "ConstraintTemplateSelfLink": "https://[apiserver]/apis/templates.gatekeeper.sh/v1beta1/constrainttemplates/k8simagedigests",
-            "ConstraintTemplateUID": "8ffbcb89-7c80-409b-bc63-84a41acdf54b",
-            "ConstraintUID": "ce0308ac-3f47-42b8-a5ce-9753e05e6699",
-            "Explanation": "container \u003copa\u003e uses an image without a digest \u003copenpolicyagent/opa:0.9.2\u003e",
+            "ConstraintName": "repo-is-openpolicyagent",
+            "ConstraintSelfLink": "https://[apiserver]/apis/constraints.gatekeeper.sh/v1beta1/k8sallowedrepos/repo-is-openpolicyagent",
+            "ConstraintTemplateSelfLink": "https://[apiserver]/apis/templates.    gatekeeper.sh/v1beta1/constrainttemplates/k8sallowedrepos",
+            "ConstraintTemplateUID": "e35b1c39-15f7-4a7a-afae-1637b44e81b2",
+            "ConstraintUID": "b904dddb-0a23-4f4f-81bb-0103de838d3e",
+            "Explanation": "container \u003cnginx\u003e has an invalid image repo \u003cnginx\u003e, allowed repos are [\"openpolicyagent\"]",
             "ProjectId": "",
             "ResourceAPIGroup": "",
             "ResourceAPIVersion": "v1",
             "ResourceKind": "Pod",
-            "ResourceName": "opa",
-            "ResourceNamespace": "digest-required",
-            "ResourceSelfLink": "https://[apiserver]/api/v1/namespaces/digest-required/pods/opa",
+            "ResourceName": "nginx-disallowed",
+            "ResourceNamespace": "default",
+            "ResourceSelfLink": "https://[apiserver]/api/v1/namespaces/default/pods/nginx-disallowed",
             "ResourceStatusSelfLink": "",
-            "ResourceUID": "8fb21d31-30de-49a2-8ff5-a46979cf79b8",
+            "ResourceUID": "8ddd752f-e620-43ea-b966-4ae2ae507c67",
             "ScannerName": "GATEKEEPER"
           },
           "event_time": {
-            "seconds": 1602568357
+            "seconds": 1606287680
           }
         }
       }
@@ -577,7 +583,9 @@ part of a build pipeline or scheduled task.
     where `[apiserver]` is the IP address or hostname of your GKE cluster
     [API server](https://kubernetes.io/docs/concepts/overview/components/#kube-apiserver).
 
-    To understand what the attributes mean, see the
+    </walkthrough-alt>
+
+    To learn what the attributes mean, see the
     [Finding resource](https://cloud.google.com/security-command-center/docs/reference/rest/v1/organizations.sources.findings)
     in the Security Command Center API.
 
@@ -594,20 +602,23 @@ part of a build pipeline or scheduled task.
     When you execute this command, you impersonate the findings editor Google
     service account.
 
-    The output looks similar to this:
+    The output of the command includes a log entry with the message
+    `create finding`. This means that the `gatekeeper-securitycenter`
+    command-line tool created a finding.
 
-    ```terminal
-    2020/10/13 16:56:28 findings.go:48: sync "level"=0 "msg"="created new finding"  "constraintTemplate"="K8sImageDigests" "constraintUri"="https://[apiserver]/apis/constraints.gatekeeper.sh/v1beta1/k8simagedigests/container-image-must-have-digest" "name"="organizations/[organization_id]/sources/[source_id]/findings/[finding_id]" "resourceName"="https://[apiserver]/api/v1/namespaces/digest-required/pods/opa"
-    ```
-
+    The `findingID` attribute of that log entry contains the full name of the
+    finding in the format
+    `organizations/[organization_id]/sources/[source_id]/findings/[finding_id]`,
     where `[organization_id]` is your Google Cloud organization ID,
     `[source_id]` is your Security Command Center source ID, and `[finding_id]`
-    is the finding ID. The finding ID is determined using attributes from the
-    constraint, the constraint template, and the object that violated the
-    constraint.
+    is the finding ID.
 
-    To view the findings, see the section
+    <walkthrough-alt>
+
+    To view the finding, see the section
     [Viewing findings](#viewing-findings).
+
+    </walkthrough-alt>
 
 ## Creating findings using a Kubernetes controller
 
@@ -639,8 +650,18 @@ existing finding to _inactive_.
 2.  Install [`kpt`](https://googlecontainertools.github.io/kpt/):
 
     ```bash
+    sudo apt-get install -y google-cloud-sdk-kpt
+    ```
+
+    <walkthrough-alt>
+
+    If you _don't_ use Cloud Shell, install `kpt` using this command instead:
+
+    ```bash
     gcloud components install kpt --quiet
     ```
+
+    </walkthrough-alt>
 
     `kpt` is a command-line tool that allows you to manage, manipulate,
     customize, and apply Kubernetes resources. You use `kpt` in this tutorial
@@ -703,7 +724,7 @@ existing finding to _inactive_.
 8.  Apply the controller resources to your cluster:
 
     ```bash
-    kpt live apply manifests --reconcile-timeout 2m --output table
+    kpt live apply manifests --reconcile-timeout 2m --output events
     ```
 
     This command creates the following resources in your cluster:
@@ -735,107 +756,77 @@ existing finding to _inactive_.
         --namespace gatekeeper-securitycenter --follow
     ```
 
-    At first, you see this message in the log:
-
-    ```terminal
-    {"level":"info","ts":[timestamp],"logger":"controller","caller":"findings/controller.go:42","msg":"Starting control loop"}
-    ```
-
-    A moment later, you see a message similar to this in the log:
-
-    ```terminal
-    {"level":"info","ts":[timestamp],"logger":"controller","caller":"securitycenter/findings.go:44","msg":"finding already exists","name":"organizations/[organization_id]/sources/[source_id]/findings/[finding_id]","constraintTemplate":"K8sImageDigests","resourceName":"https://[apiserver]/api/v1/namespaces/digest-required/pods/opa","constraintUri":"https://[apiserver]/apis/constraints.gatekeeper.sh/v1beta1/k8simagedigests/container-image-must-have-digest"}
-    ```
-
-    This message means that the controller tried to create a finding, but the
-    finding already existed for that source. This is because you previously
-    created the finding using the `gatekeeper-securitycenter` command-line tool
-    in the section
-    [Recording violations using the command line](#recording-violations-using-the-command-line).
+    You see log entries with the message `syncing findings`.
 
     Press **Ctrl+C** to stop following the log.
 
 10. To verify that the controller can create new findings, create a policy and
-    a resource that violates the policy. The policy you deploy restricts the
-    permitted container registries for pods in a namespace called production.
+    a resource that violates the policy. The policy requires that pod
+    specifications refer to container images using digests.
 
-    Create a namespace called production:
-
-    ```bash
-    kubectl create ns production
-    ```
-
-11. Navigate to the Gatekeeper library repository directory:
+    Navigate to the Gatekeeper library repository directory:
 
     ```bash
     cd ~/gatekeeper-library
     ```
 
-12. Create a pod using the example manifest for the `allowedrepos` policy:
+11. Create a pod called `opa-disallowed` in the `default` namespace:
 
     ```bash
-    kubectl apply -f library/general/allowedrepos/example.yaml
+    kubectl apply --namespace default -f \
+        library/general/imagedigests/samples/container-image-must-have-digest/example_disallowed.yaml
     ```
 
-    This namespace does not have the label required by the constraint you
-    create later.
+    This pod specification refers to a container image by tag instead of by
+    digest.
 
-13. Create the `K8sAllowedRepos` constraint template:
+12. Create a constraint template called `k8simagedigests`:
 
     ```bash
-    kubectl apply -f library/general/allowedrepos/template.yaml
+    kubectl apply -f library/general/imagedigests/template.yaml
     ```
 
-14. Create the constraint:
+13. Create a constraint called `container-image-must-have-digest`:
 
     ```bash
-    kubectl apply -f library/general/allowedrepos/constraint.yaml
+    kubectl apply -f \
+        library/general/imagedigests/samples/container-image-must-have-digest/constraint.yaml
     ```
 
-15. Following the controller log:
+    This constraint only applies to the `default` namespace.
+
+14. Following the controller log:
 
     ```bash
     kubectl logs deployment/gatekeeper-securitycenter-controller-manager \
         --namespace gatekeeper-securitycenter --follow
     ```
 
-    After a few minutes, you see this message in the log:
-
-    ```terminal
-    {"level":"info","ts":[timestamp],"logger":"controller","caller":"securitycenter/findings.go:48","msg":"created new finding","name":"organizations/[organization_id]/sources/[source_id]/findings/[finding_id]","constraintTemplate":"K8sAllowedRepos","resourceName":"https://[apiserver]/api/v1/namespaces/production/pods/opa","constraintUri":"https://[apiserver]/apis/constraints.gatekeeper.sh/v1beta1/k8sallowedrepos/prod-repo-is-openpolicyagent"}
-    ```
-
-    This message means the controller created a new finding.
+    After a few minutes, you see a log entry with the message
+    `create finding`. This means that the `gatekeeper-securitycenter`
+    controller created a finding.
 
     Press **Ctrl+C** to stop following the log.
 
-16. To verify that the controller can set the finding state to
+15. To verify that the controller can set the finding state to
     [`INACTIVE`](https://cloud.google.com/security-command-center/docs/reference/rest/v1/organizations.sources.findings#State)
     when a violation is no longer reported by Policy Controller or Gatekeeper,
-    delete the pod in the namespace called `production`:
+    delete the pod called `opa-disallowed` in the `default` namespace:
 
     ```bash
-    kubectl delete pod opa --namespace production
+    kubectl delete pod opa-disallowed --namespace default
     ```
 
-    **Note:** By default, the Security Command Center dashboard shows active
-    findings. You can see inactive findings by turning off the toggle
-    **Show Only Active Findings**.
-
-17. Following the controller log:
+16. Follow the controller log:
 
     ```bash
     kubectl logs deployment/gatekeeper-securitycenter-controller-manager \
         --namespace gatekeeper-securitycenter --follow
     ```
 
-    After a few minutes, you see this message in the log:
-
-    ```terminal
-    {"level":"info","ts":[timestamp],"logger":"controller","caller":"securitycenter/findings.go:178","msg":"updating finding state","findingName":"organizations/[organization_id]/sources/[source_id]/findings/[finding_id]","state":"INACTIVE"}
-    ```
-
-    This message means the controller set the finding state to inactive.
+    After a few minutes, you see a log entry with the message
+    `updating finding state` and the attribute `"state":"INACTIVE"`.
+    This means the controller set the finding state to inactive.
 
     Press **Ctrl+C** to stop following the log.
 
@@ -856,8 +847,10 @@ findings, wait a few minutes and try again.
         --format json
     ```
 
-    This command uses the `basename` command to get the numeric source ID from
-    the full source name.
+    You use the `basename` command to get the numeric source ID from the full
+    source name.
+
+    <walkthrough-alt>
 
     The output looks similar to this:
 
@@ -865,44 +858,44 @@ findings, wait a few minutes and try again.
     [
       {
         "finding": {
-          "category": "K8sImageDigests",
-          "createTime": "2020-10-13T05:56:28.168Z",
-          "eventTime": "2020-10-13T05:56:00Z",
-          "externalUri": "https://[apiserver]/apis/constraints.gatekeeper.sh/v1beta1/k8simagedigests/container-image-must-have-digest",
-          "name": "organizations/[organization_id]/sources/[source_id]/findings/[finding_id]",
+          "category": "K8sAllowedRepos",
+          "createTime": "2020-11-25T06:58:47.213Z",
+          "eventTime": "2020-11-25T06:58:20Z",
+          "externalUri": "https://[apiserver]/apis/constraints.gatekeeper.sh/v1beta1/k8sallowedrepos/repo-is-openpolicyagent",
+          "name": "organizations/[organization_id]/sources/[source_id]/findings/    [finding_id]",
           "parent": "organizations/[organization_id]/sources/[source_id]",
-          "resourceName": "https://[apiserver]/api/v1/namespaces/digest-required/pods/opa",
+          "resourceName": "https://[apiserver]/api/v1/namespaces/default/pods/    nginx-disallowed",
           "securityMarks": {
             "name": "organizations/[organization_id]/sources/[source_id]/findings/[finding_id]/securityMarks"
           },
           "sourceProperties": {
-            "Cluster": "",
-            "ConstraintName": "container-image-must-have-digest",
-            "ConstraintSelfLink": "https://[apiserver]/apis/constraints.gatekeeper.sh/v1beta1/k8simagedigests/container-image-must-have-digest",
-            "ConstraintTemplateSelfLink": "https://[apiserver]/apis/templates.gatekeeper.sh/v1beta1/constrainttemplates/k8simagedigests",
-            "ConstraintTemplateUID": "8ffbcb89-7c80-409b-bc63-84a41acdf54b",
-            "ConstraintUID": "ce0308ac-3f47-42b8-a5ce-9753e05e6699",
-            "Explanation": "container <opa> uses an image without a digest <openpolicyagent/opa:0.9.2>",
+            "Cluster": "[cluster-name]",
+            "ConstraintName": "repo-is-openpolicyagent",
+            "ConstraintSelfLink": "https://[apiserver]/apis/constraints.gatekeeper.sh/v1beta1/k8sallowedrepos/repo-is-openpolicyagent",
+            "ConstraintTemplateSelfLink": "https://[apiserver]/apis/templates.    gatekeeper.sh/v1beta1/constrainttemplates/k8sallowedrepos",
+            "ConstraintTemplateUID": "e35b1c39-15f7-4a7a-afae-1637b44e81b2",
+            "ConstraintUID": "b904dddb-0a23-4f4f-81bb-0103de838d3e",
+            "Explanation": "container <nginx> has an invalid image repo <nginx>, allowed repos are [\"openpolicyagent\"]",
             "ProjectId": "",
             "ResourceAPIGroup": "",
             "ResourceAPIVersion": "v1",
             "ResourceKind": "Pod",
-            "ResourceName": "opa",
-            "ResourceNamespace": "digest-required",
-            "ResourceSelfLink": "https://[apiserver]/api/v1/namespaces/digest-required/pods/opa",
+            "ResourceName": "nginx-disallowed",
+            "ResourceNamespace": "default",
+            "ResourceSelfLink": "https://[apiserver]/api/v1/namespaces/default/pods/nginx-disallowed",
             "ResourceStatusSelfLink": "",
-            "ResourceUID": "8fb21d31-30de-49a2-8ff5-a46979cf79b8",
+            "ResourceUID": "8ddd752f-e620-43ea-b966-4ae2ae507c67",
             "ScannerName": "GATEKEEPER"
           },
           "state": "ACTIVE"
         },
         "resource": {
-          "name": "https://[apiserver]/api/v1/namespaces/digest-required/pods/opa"
+          "name": "https://[apiserver]/api/v1/namespaces/default/pods/nginx-disallowed"
         }
       },
       {
         "finding": {
-          "category": "K8sAllowedRepos",
+          "category": "K8sImageDigests",
           [...]
       }
     ]
@@ -914,7 +907,9 @@ findings, wait a few minutes and try again.
     your Security Command Center source ID, and `[finding_id]` is the
     finding ID.
 
-    To understand what the finding attributes mean, see
+    </walkthrough-alt>
+
+    To learn what the finding attributes mean, see
     [the Finding resource in the Security Command Center API](https://cloud.google.com/security-command-center/docs/reference/rest/v1/organizations.sources.findings).
 
     **Note:** Some of the source properties will be missing (empty) for some
@@ -922,7 +917,7 @@ findings, wait a few minutes and try again.
     attributes than others. For instance, findings for Pod resources will not
     have a value for the **ResourceAPIGroup** source property because Pod
     doesn't belong to a Kubernetes API group. Only
-    [Config Connector](https://cloud.google.com/config-connector/docs/overview)
+    [Config Connector](https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter/blob/main/docs/config-connector-gatekeeper-tutorial.md)
     resources will have a value for the **ProjectId** source property.
 
 2.  View the findings in the Findings tab of the Security Command Center
@@ -938,9 +933,14 @@ findings, wait a few minutes and try again.
     If you don't see **Gatekeeper** in the **Source type** list, clear any
     filters in the list of findings on the right.
 
-3.  If you edit a resource so it no longer causes a violation, the finding
-    state will be set to _inactive_. It can take a few minutes for this change
-    to be visible in Security Command Center.
+    If a resource no longer causes a violation because of a change to the
+    resource or the policy, the controller sets the finding state to
+    _inactive_. It can take a few minutes for this change to be visible in
+    Security Command Center.
+
+    By default, the Security Command Center dashboard shows active findings.
+    You can see inactive findings by turning off the toggle
+    **Show Only Active Findings**.
 
 ## Troubleshooting
 
@@ -965,7 +965,7 @@ findings, wait a few minutes and try again.
     errors, you can increase the verbosity of the log output by setting the
     `DEBUG` environment variable to `true`:
 
-    ```bash
+    ```
     DEBUG=true ./gatekeeper-securitycenter [subcommand] [flags]
     ```
 
@@ -978,8 +978,8 @@ findings, wait a few minutes and try again.
 
 ## Automating the setup
 
-To automate some of the steps in this tutorial, you can download and run a
-setup script that performs the following tasks:
+For future deployments, you can automate some of the steps in this tutorial by
+downloading and running a setup script that performs the following tasks:
 
 -   Creates the sources admin and findings editor Google service accounts.
 -   Grants the Cloud IAM role bindings to the Google service accounts.
@@ -989,13 +989,13 @@ setup script that performs the following tasks:
 
 1.  Download the setup script:
 
-    ```bash
-    curl -sLO https://raw.githubusercontent.com/GoogleCloudPlatform/gatekeeper-securitycenter/scripts/setup.sh
+    ```
+    curl -sLO https://raw.githubusercontent.com/GoogleCloudPlatform/gatekeeper-securitycenter/main/scripts/setup.sh
     ```
 
 2.  Execute the script:
 
-    ```bash
+    ```
     bash setup.sh
     ```
 
@@ -1071,7 +1071,7 @@ the resources used in this tutorial, delete the individual resources.
 ## What's next
 
 -   Learn how to
-    [create policy-compliant Google Cloud resources using Config Connector and Policy Controller or Gatekeeper](config-connector-gatekeeper-tutorial.md).
+    [create policy-compliant Google Cloud resources using Config Connector and Policy Controller or Gatekeeper](https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter/blob/main/docs/config-connector-gatekeeper-tutorial.md).
 
 -   Discover how to
     [run Policy Controller validation as part of a continuous integration pipeline in Cloud Build](https://cloud.google.com/anthos-config-management/docs/how-to/app-policy-validation-ci-pipeline).

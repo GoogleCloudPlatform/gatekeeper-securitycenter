@@ -54,7 +54,7 @@ openAPI:
       x-k8s-cli:
         setter:
           name: image
-          value: docker.pkg.github.com/googlecloudplatform/gatekeeper-securitycenter/gatekeeper-securitycenter
+          value: gcr.io/cloud-solutions-images/gatekeeper-securitycenter
           setBy: package-default
     io.k8s.cli.substitutions.interval-flag:
       x-k8s-cli:
