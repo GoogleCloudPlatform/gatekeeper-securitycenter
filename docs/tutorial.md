@@ -96,7 +96,8 @@ To generate a cost estimate based on your projected usage, use the
 New Google Cloud users might be eligible for a free trial.
 
 When you finish, you can avoid continued billing by deleting the resources you
-created. For more information, see [Cleaning up](#cleaning-up).
+created.
+<walkthrough-alt>For more information, see [Cleaning up](#cleaning-up).</walkthrough-alt>
 
 ## Before you begin
 
@@ -238,8 +239,7 @@ the next section to install the open source Gatekeeper distribution instead.
 
 If you don't have an Anthos entitlement, you can install the open source
 Gatekeeper distribution instead of Policy Controller. If you installed Policy
-Controller in the previous section, skip to the
-[next section](#creating-a-policy).
+Controller in the previous section, skip to the next section.
 
 1.  Define the Gatekeeper version to install:
 

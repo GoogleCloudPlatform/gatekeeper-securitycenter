@@ -50,8 +50,8 @@ such as
 [Security Center Admin Editor](https://cloud.google.com/security-command-center/docs/access-control).
 
 After you have created the resources, you can deploy the controller by running
-the provided <scripts/deploy.sh> script, or you can follow the steps in the
-[`kpt` package](manifests/README.md).
+the provided [deploy script](scripts/deploy.sh), or you can follow the steps in
+the [`kpt` package](manifests/README.md).
 
 ## Build
 

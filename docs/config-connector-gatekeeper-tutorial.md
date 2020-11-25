@@ -69,8 +69,8 @@ Kubernetes and Google Cloud resources. This tutorial demonstrates how you can:
 -   Set up Config Connector
 -   Install Policy Controller or Gatekeeper
 -   Create a Cloud Storage bucket using Config Connector
--   Create a Gatekeeper policy to restrict permitted Cloud Storage bucket
-    locations
+-   Create a Policy Controller or Gatekeeper policy to restrict permitted
+    Cloud Storage bucket locations
 -   Verify the policy
 -   View policy violations for resources created prior to the policy
 -   Validate resources during development
@@ -89,37 +89,34 @@ To generate a cost estimate based on your projected usage, use the
 New Google Cloud users might be eligible for a free trial.
 
 When you finish, you can avoid continued billing by deleting the resources you
-created. For more information, see [Cleaning up](#cleaning-up).
+created.
+<walkthrough-alt>For more information, see [Cleaning up](#cleaning-up).</walkthrough-alt>
 
 ## Before you begin
 
 <!-- {% setvar project_id "YOUR_PROJECT_ID" %} -->
 
-1.  In the Cloud Console, on the project selector page, select or create a
-    Cloud project.
+1.  <walkthrough-project-billing-setup></walkthrough-project-billing-setup>
 
-    **Note:** If you don't plan to keep the resources that you create in this
-    tutorial, create a project instead of selecting an existing project. After
-    you finish these steps, you can delete the project, removing all resources
-    associated with the project.
+    <walkthrough-alt>
 
-    [Go to the project selector page](https://console.cloud.google.com/projectselector2/home/dashboard)
+    Open a Linux or macOS terminal and install the following command-line tools:
 
-2.  Make sure that billing is enabled for your Google Cloud project.
-    [Learn how to confirm billing is enabled for your project.](https://cloud.google.com/billing/docs/how-to/modify-project)
+    - [Google Cloud SDK](https://cloud.google.com/sdk)
+    - [`kubectl`](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+    - [Go distribution](https://golang.org/dl/) version 1.15 or later
+    - [`jq`](https://stedolan.github.io/jq/)
 
-3.  In the Cloud Console, go to Cloud Shell:
+    If you like, you can use [Cloud Shell](https://cloud.google.com/shell):
 
-    [Go to Cloud Shell](https://console.cloud.google.com/?cloudshell=true)
+    [![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://ssh.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2Fgatekeeper-securitycenter&cloudshell_tutorial=docs%2Fconfig-connector-gatekeeper-tutorial.md)
 
-    At the bottom of the Cloud Console, a Cloud Shell session opens and
-    displays a command-line prompt. Cloud Shell is a shell environment with the
-    Cloud SDK already installed, including the `gcloud` command-line tool, and
-    with values already set for your current project. It can take a few seconds
-    for the session to initialize. You use Cloud Shell to run all the commands
-    in this tutorial.
+    Cloud Shell is a Linux shell environment with the Cloud SDK and the other
+    required tools already installed.
 
-4.  Set the Google Cloud project you want to use for this tutorial:
+    </walkthrough-alt>
+
+2.  Set the Google Cloud project you want to use for this tutorial:
 
     ```bash
     gcloud config set core/project {{project-id}}
@@ -128,20 +125,23 @@ created. For more information, see [Cleaning up](#cleaning-up).
     where `{{project-id}}` is your
     [Google Cloud project ID](https://cloud.google.com/resource-manager/docs/creating-managing-projects).
 
-5.  Define an exported environment variable containing your
+    **Note:** Make sure billing is enabled for your Google Cloud project.
+    [Learn how to confirm billing is enabled for your project.](https://cloud.google.com/billing/docs/how-to/modify-project)
+
+3.  Define an exported environment variable containing your
     [Google Cloud project ID](https://cloud.google.com/resource-manager/docs/creating-managing-projects):
 
     ```bash
     export GOOGLE_CLOUD_PROJECT=$(gcloud config get-value core/project)
     ```
 
-6.  Enable the Google Kubernetes Engine API:
+4.  Enable the Google Kubernetes Engine API:
 
     ```bash
     gcloud services enable container.googleapis.com
     ```
 
-7.  Create and navigate to a directory that you use to store files created for
+5.  Create and navigate to a directory that you use to store files created for
     this tutorial:
 
     ```bash
@@ -236,7 +236,7 @@ and the managed project are the same project.
     for the Kubernetes namespace and associates it with the Google service
     account:
 
-    ```yaml
+    ```bash
     cat << EOF > config-connector-context-tutorial.yaml
     apiVersion: core.cnrm.cloud.google.com/v1beta1
     kind: ConfigConnectorContext
@@ -314,7 +314,7 @@ the next section to install the open source Gatekeeper distribution instead.
     This manifest instructs the Config Management operator to install the
     Policy Controller components:
 
-    ```yaml
+    ```bash
     cat << EOF > config-management.yaml
     apiVersion: configmanagement.gke.io/v1
     kind: ConfigManagement
@@ -346,8 +346,7 @@ the next section to install the open source Gatekeeper distribution instead.
 
 If you don't have an Anthos entitlement, you can install the open source
 Gatekeeper distribution instead of Policy Controller. If you installed Policy
-Controller in the previous section, skip to the
-[next section](#creating-a-policy).
+Controller in the previous section, skip to the next section.
 
 1.  Define the Gatekeeper version to install:
 
@@ -373,7 +372,7 @@ Controller in the previous section, skip to the
 1.  Create a Cloud Storage bucket in the `us-central1` region using Config
     Connector:
 
-    ```yaml
+    ```bash
     cat << EOF > tutorial-storagebucket-us-central1.yaml
     apiVersion: storage.cnrm.cloud.google.com/v1beta1
     kind: StorageBucket
@@ -398,10 +397,10 @@ Controller in the previous section, skip to the
     You see this output when the Cloud Storage bucket has been created:
 
     ```terminal
-    gs://tutorial-us-central1-[GOOGLE_CLOUD_PROJECT]/
+    gs://tutorial-us-central1-{{project-id}}/
     ```
 
-    where `[GOOGLE_CLOUD_PROJECT]` is your Google Cloud project ID. If you
+    where `{{project-id}}` is your Google Cloud project ID. If you
     don't see this output, wait a minute and try again.
 
 ## Creating a policy
@@ -417,7 +416,7 @@ specifies where the policy applies and input parameters to the policy logic.
     The constraint template also allows you to specify a list of names for
     exempted buckets:
 
-    ```yaml
+    ```bash
     cat << EOF > tutorial-storagebucket-location-template.yaml
     apiVersion: templates.gatekeeper.sh/v1beta1
     kind: ConstraintTemplate
@@ -476,7 +475,7 @@ specifies where the policy applies and input parameters to the policy logic.
     to the `tutorial` namespace, and it exempts the default Cloud Storage
     bucket for Cloud Build:
 
-    ```yaml
+    ```bash
     cat << EOF > tutorial-storagebucket-location-constraint.yaml
     apiVersion: constraints.gatekeeper.sh/v1beta1
     kind: GCPStorageLocationConstraintV1
@@ -513,7 +512,7 @@ specifies where the policy applies and input parameters to the policy logic.
 
 1.  Try to create a Cloud Storage bucket in a location that isn't allowed (us-west1):
 
-    ```yaml
+    ```bash
     cat << EOF > tutorial-storagebucket-us-west1.yaml
     apiVersion: storage.cnrm.cloud.google.com/v1beta1
     kind: StorageBucket
@@ -529,18 +528,24 @@ specifies where the policy applies and input parameters to the policy logic.
     kubectl apply -f tutorial-storagebucket-us-west1.yaml
     ```
 
+    This returns an error that says the bucket location is disallowed.
+
+    <walkthrough-alt>
+
     The output looks like this:
 
     ```terminal
-    Error from server ([denied by singapore-and-jakarta-only] Cloud Storage bucket <tutorial-us-west1-[GOOGLE_CLOUD_PROJECT]> uses a disallowed location <us-west1>, allowed locations are ["asia-southeast1", "asia-southeast2"]): error when creating "tutorial-storagebucket-us-west1.yaml": admission webhook "validation.gatekeeper.sh" denied the request: [denied by singapore-and-jakarta-only] Cloud Storage bucket <tutorial-us-west1-[GOOGLE_CLOUD_PROJECT]> uses a disallowed location <us-west1>, allowed locations are ["asia-southeast1", "asia-southeast2"]
+    Error from server ([denied by singapore-and-jakarta-only] Cloud Storage bucket <tutorial-us-west1-{{project-id}}> uses a disallowed location <us-west1>, allowed locations are ["asia-southeast1", "asia-southeast2"]): error when creating "tutorial-storagebucket-us-west1.yaml": admission webhook "validation.gatekeeper.sh" denied the request: [denied by singapore-and-jakarta-only] Cloud Storage bucket <tutorial-us-west1-{{project-id}}> uses a disallowed location <us-west1>, allowed locations are ["asia-southeast1", "asia-southeast2"]
     ```
 
-    where `[GOOGLE_CLOUD_PROJECT]` is your Google Cloud
+    where `{{project-id}}` is your Google Cloud
     [project ID](https://cloud.google.com/resource-manager/docs/creating-managing-projects).
+
+    </walkthrough-alt>
 
 2.  Create a Cloud Storage bucket in a permitted location (`asia-southeast1`):
 
-    ```yaml
+    ```bash
     cat << EOF > tutorial-storagebucket-asia-southeast1.yaml
     apiVersion: storage.cnrm.cloud.google.com/v1beta1
     kind: StorageBucket
@@ -559,10 +564,10 @@ specifies where the policy applies and input parameters to the policy logic.
     The output is this:
 
     ```terminal
-    storagebucket.storage.cnrm.cloud.google.com/tutorial-asia-southeast1-[GOOGLE_CLOUD_PROJECT] created
+    storagebucket.storage.cnrm.cloud.google.com/tutorial-asia-southeast1-{{project-id}} created
     ```
 
-    where `[GOOGLE_CLOUD_PROJECT]` is your Google Cloud project ID.
+    where `{{project-id}}` is your Google Cloud project ID.
 
 3.  Wait for the bucket to be created:
 
@@ -573,11 +578,12 @@ specifies where the policy applies and input parameters to the policy logic.
     You see this output when the Cloud Storage bucket has been created:
 
     ```terminal
-    gs://tutorial-asia-southeast1-[GOOGLE_CLOUD_PROJECT]/
-    gs://tutorial-us-central1-[GOOGLE_CLOUD_PROJECT]/
+    gs://tutorial-asia-southeast1-{{project-id}}/
+    gs://tutorial-us-central1-{{project-id}}/
     ```
 
-    where [GOOGLE_CLOUD_PROJECT] is your Google Cloud project ID. If you don't see this output, wait a minute and try again.
+    where {{project-id}} is your Google Cloud project ID. If you don't see this
+    output, wait a minute and try again.
 
 ## Auditing constraints
 
@@ -603,21 +609,24 @@ Config Connector.
       {
         "enforcementAction": "deny",
         "kind": "StorageBucket",
-        "message": "Cloud Storage bucket <tutorial-us-central1-[GOOGLE_CLOUD_PROJECT]> uses a     disallowed location <us-central1>, allowed locations are [\"asia-southeast1\",     \"asia-southeast2\"]",
-        "name": "tutorial-us-central1-[GOOGLE_CLOUD_PROJECT]",
+        "message": "Cloud Storage bucket <tutorial-us-central1-{{project-id}}> uses a disallowed location <us-central1>, allowed locations are [\"asia-southeast1\", \"asia-southeast2\"]",
+        "name": "tutorial-us-central1-{{project-id}}",
         "namespace": "tutorial"
       }
     ]
     ```
 
-    where `[GOOGLE_CLOUD_PROJECT]` is your Google Cloud project ID.
+    where `{{project-id}}` is your Google Cloud project ID.
 
     **Note:** Policy Controller and Gatekeeper have a
-    [default limit of 20 reported violations per constraint](https://github.com/open-policy-agent/gatekeeper#audit).
+    [default limit on the number of reported violations per constraint](https://github.com/open-policy-agent/gatekeeper#audit).
 
 ## Validating resources during development
 
-During development and continuous integration builds, it's helpful to validate resources against constraints before applying them to a GKE cluster. This provides fast feedback and allows you to discover issues with resources and constraints early.
+During development and continuous integration builds, it's helpful to validate
+resources against constraints before applying them to a GKE cluster. This
+provides fast feedback and allows you to discover issues with resources and
+constraints early.
 
 1.  Install [`kpt`](https://googlecontainertools.github.io/kpt/):
 
@@ -654,28 +663,33 @@ During development and continuous integration builds, it's helpful to validate r
     image and is available on
     [Container Registry](https://cloud.google.com/container-registry).
 
-    The output looks like this. The function reports that the manifest files
-    for Cloud Storage buckets in the `us-central1` and `us-west1` regions
-    violate the constraint:
+    The function reports that the manifest files for Cloud Storage buckets in
+    the `us-central1` and `us-west1` regions violate the constraint.
+
+    <walkthrough-alt>
+
+    The output looks like this:
 
     ```terminal
     Error: Found 2 violations:
 
-    [1] Cloud Storage bucket <tutorial-us-central1-[GOOGLE_CLOUD_PROJECT]> uses a disallowed location <us-central1>, allowed locations are ["asia-southeast1", "asia-southeast2"]
+    [1] Cloud Storage bucket <tutorial-us-central1-{{project-id}}> uses a disallowed location <us-central1>, allowed locations are ["asia-southeast1", "asia-southeast2"]
 
-    name: "tutorial-us-central1-[GOOGLE_CLOUD_PROJECT]"
+    name: "tutorial-us-central1-{{project-id}}"
     path: tutorial-storagebucket-us-central1.yaml
 
-    [2] Cloud Storage bucket <tutorial-us-west1-[GOOGLE_CLOUD_PROJECT]> uses a disallowed location <us-west1>, allowed locations are ["asia-southeast1", "asia-southeast2"]
+    [2] Cloud Storage bucket <tutorial-us-west1-{{project-id}}> uses a disallowed location <us-west1>, allowed locations are ["asia-southeast1", "asia-southeast2"]
 
-    name: "tutorial-us-west1-[GOOGLE_CLOUD_PROJECT]"
+    name: "tutorial-us-west1-{{project-id}}"
     path: tutorial-storagebucket-us-west1.yaml
 
 
     error: exit status 1
     ```
 
-    where `[GOOGLE_CLOUD_PROJECT]` is your Google Cloud project ID.
+    where `{{project-id}}` is your Google Cloud project ID.
+
+    </walkthrough-alt>
 
 ## Validating resources created outside Config Connector
 
@@ -701,8 +715,8 @@ To export the resources, you can use Cloud Asset Inventory.
     ```
 
 2.  Export all Cloud Storage resources in your current project, and store the
-    output in the bucket `tutorial-asia-southeast1-[GOOGLE_CLOUD_PROJECT]`,
-    where `[GOOGLE_CLOUD_PROJECT]` is your Google Cloud project ID:
+    output in the bucket `tutorial-asia-southeast1-{{project-id}}`,
+    where `{{project-id}}` is your Google Cloud project ID:
 
     ```bash
     gcloud asset export \
@@ -716,11 +730,11 @@ To export the resources, you can use Cloud Asset Inventory.
     The output looks similar to this:
 
     ```terminal
-    Export in progress for root asset [projects/[GOOGLE_CLOUD_PROJECT]].
+    Export in progress for root asset [projects/{{project-id}}].
     Use [gcloud asset operations describe projects/[PROJECT_NUMBER]/operations/ExportAssets/RESOURCE/[UNIQUE_ID]] to check the status of the operation.
     ```
 
-    where `[GOOGLE_CLOUD_PROJECT]` is your Google Cloud project ID,
+    where `{{project-id}}` is your Google Cloud project ID,
     `[PROJECT_NUMBER]` is your Google Cloud project number, and `[UNIQUE_ID]`
     is the export operation ID.
 
@@ -926,7 +940,7 @@ If you want to keep the Google Cloud project you used in this tutorial, delete t
 ## What's next
 
 -   Learn how to
-    [create findings in Security Command Center for Policy Controller and Gatekeeper constraint violations](tutorial.md).
+    [create findings in Security Command Center for Policy Controller and Gatekeeper constraint violations](https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter/blob/main/docs/tutorial.md).
 
 -   Discover how to
     [run Policy Controller or Gatekeeper validation as part of a continuous integration pipeline in Cloud Build](https://cloud.google.com/anthos-config-management/docs/how-to/app-policy-validation-ci-pipeline).

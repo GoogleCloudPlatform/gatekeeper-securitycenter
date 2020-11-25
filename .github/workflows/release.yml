@@ -46,6 +46,7 @@ jobs:
       run: |
         MODULE_NAME=$(go list | tr '[:upper:]' '[:lower:]')
         echo IMAGE_NAME=${MODULE_NAME##*/} >> $GITHUB_ENV
+        echo IMAGE_REPO=$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
         RC_TAG=${GITHUB_REF##*/}
         echo TAG_NAME=${RC_TAG%%-rc*} >> $GITHUB_ENV
 
@@ -69,11 +70,33 @@ jobs:
     - name: Create checksums
       run: shasum -a 256 gatekeeper-securitycenter_* > SHA256SUMS
 
+    - name: Install crane and ko
+      run: |
+        go get github.com/google/go-containerregistry/cmd/crane
+        go get github.com/google/ko/cmd/ko
+      working-directory: tools
+
+    - name: Build and push container image
+      run: |
+        $(go env GOPATH)/bin/crane auth login docker.pkg.github.com -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+        echo -n 'IMAGE_WITH_DIGEST=' >> $GITHUB_ENV
+        $(go env GOPATH)/bin/ko publish . --base-import-paths --platform linux/amd64 --tags latest,$TAG_NAME >> $GITHUB_ENV
+      env:
+        KO_DOCKER_REPO: docker.pkg.github.com/${{ env.IMAGE_REPO }}
+
     - name: Create release body file
       run: |
         cat << EOF > ${{ runner.temp }}/body.md
-        ## Image
+        ## Images
+
+        Google Container Registry:
+
             gcr.io/cloud-solutions-images/$IMAGE_NAME:$TAG_NAME (multi-arch)
+
+        GitHub Packages:
+
+            docker.pkg.github.com/$IMAGE_REPO/$IMAGE_NAME:$TAG_NAME (linux/amd64)
+            ${IMAGE_WITH_DIGEST##*@}
         EOF
 
     - name: Create release branch
