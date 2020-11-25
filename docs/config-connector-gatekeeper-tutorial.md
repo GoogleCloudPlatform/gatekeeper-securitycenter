@@ -290,17 +290,12 @@ and the managed project are the same project.
 
 ## Installing Policy Controller
 
-If you have an [Anthos entitlement](https://cloud.google.com/anthos/pricing),
+If you have a
+[managed Anthos cluster](https://cloud.google.com/anthos/docs/setup/overview#requirements),
 follow the steps in this section to install Policy Controller. If not, skip to
 the next section to install the open source Gatekeeper distribution instead.
 
-1.  Enable the Anthos API:
-
-    ```bash
-    gcloud services enable anthos.googleapis.com
-    ```
-
-2.  Download the Config Management operator
+1.  Download the Config Management operator
     [custom resource definition (CRD)](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)
     manifest and apply it to your cluster:
 
@@ -310,7 +305,7 @@ the next section to install the open source Gatekeeper distribution instead.
     kubectl apply -f config-management-operator.yaml
     ```
 
-3.  Create and apply a `ConfigManagement` manifest based on the operator CRD.
+2.  Create and apply a `ConfigManagement` manifest based on the operator CRD.
     This manifest instructs the Config Management operator to install the
     Policy Controller components:
 
@@ -330,7 +325,7 @@ the next section to install the open source Gatekeeper distribution instead.
     kubectl apply -f config-management.yaml
     ```
 
-4.  Wait for Policy Controller to be ready, this could take a few minutes:
+3.  Wait for Policy Controller to be ready, this could take a few minutes:
 
     ```bash
     kubectl rollout status deploy gatekeeper-controller-manager \
