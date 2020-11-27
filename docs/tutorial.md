@@ -232,7 +232,7 @@ the next section to install the open source Gatekeeper distribution instead.
 
 ## Installing Gatekeeper
 
-If you don't have an Anthos entitlement, you can install the open source
+If you don't have a managed Anthos cluster, you can install the open source
 Gatekeeper distribution instead of Policy Controller. If you installed Policy
 Controller in the previous section, skip to the next section.
 
@@ -428,7 +428,7 @@ Gatekeeper.
     OS=$(go env GOOS)
     ARCH=$(go env GOARCH)
 
-    curl -sLo gatekeeper-securitycenter "https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter/releases/download/${VERSION}/gatekeeper-securitycenter_${OS}_${ARCH}"
+    curl -sSLo gatekeeper-securitycenter "https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter/releases/download/${VERSION}/gatekeeper-securitycenter_${OS}_${ARCH}"
 
     chmod +x gatekeeper-securitycenter
     ```
@@ -985,7 +985,7 @@ downloading and running a setup script that performs the following tasks:
 1.  Download the setup script:
 
     ```
-    curl -sLO https://raw.githubusercontent.com/GoogleCloudPlatform/gatekeeper-securitycenter/main/scripts/setup.sh
+    curl -sSLO https://raw.githubusercontent.com/GoogleCloudPlatform/gatekeeper-securitycenter/main/scripts/setup.sh
     ```
 
 2.  Execute the script:

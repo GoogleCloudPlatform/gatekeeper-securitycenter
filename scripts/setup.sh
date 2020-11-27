@@ -72,7 +72,7 @@ ARCH=${ARCH:-$(go env GOARCH)}
 
 if [[ ! -x "gatekeeper-securitycenter-$VERSION" ]]; then
     >&2 echo Downloading "gatekeeper-securitycenter-$VERSION"
-    curl -sLo "gatekeeper-securitycenter-$VERSION" "https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter/releases/download/${VERSION}/gatekeeper-securitycenter_${OS}_${ARCH}"
+    curl -sSLo "gatekeeper-securitycenter-$VERSION" "https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter/releases/download/${VERSION}/gatekeeper-securitycenter_${OS}_${ARCH}"
     chmod +x "gatekeeper-securitycenter-$VERSION"
 fi
 

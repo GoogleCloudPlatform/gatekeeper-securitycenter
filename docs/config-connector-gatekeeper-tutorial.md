@@ -339,7 +339,7 @@ the next section to install the open source Gatekeeper distribution instead.
 
 ## Installing Gatekeeper
 
-If you don't have an Anthos entitlement, you can install the open source
+If you don't have a managed Anthos cluster, you can install the open source
 Gatekeeper distribution instead of Policy Controller. If you installed Policy
 Controller in the previous section, skip to the next section.
 
