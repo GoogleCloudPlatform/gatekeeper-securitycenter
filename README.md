@@ -20,10 +20,36 @@
 ## Tutorial
 
 See the accompanying [tutorial](docs/tutorial.md) for detailed explanation and
-step-by-step instructions on how to create a Security Command Center source,
-set up the Google service accounts with the required permissions, and
-installing the controller resources in a Google Kubernetes Engine (GKE)
-cluster.
+step-by-step instructions on how to create a Security Command Center source and
+Google service accounts with the required permissions, and install the
+controller resources in a Google Kubernetes Engine (GKE) cluster.
+
+## Prerequisites
+
+To install the `gatekeeper-securitycenter` controller, you must have set up the
+following prerequisite resources:
+
+-   a Google Kubernetes Engine (GKE) cluster;
+-   Policy Controller or Gatekeeper installed in the GKE cluster;
+-   Google service accounts with Cloud IAM policy bindings for Security Command
+    Center; and
+-   a Security Command Center source for findings from the Policy Controller or
+    Gatekeeper audit controller.
+
+To create the prerequisite resources, you have three options:
+
+1.  Use the `kpt` package in the [`setup`](setup) directory. This package
+    creates the Google service accounts and Cloud IAM policy bindings using
+    [Config Connector](https://cloud.google.com/config-connector/docs/overview).
+
+2.  Use the shell scripts in the [`scripts`](scripts) directory. These scripts
+    create resources using the `gcloud` tool.
+
+3.  Follow the step-by-step instructions in the [tutorial](docs/tutorial.md).
+
+For all options, you must have an appropriate Cloud IAM role for Security
+Command Center at the organization level, such as
+[Security Center Admin Editor](https://cloud.google.com/security-command-center/docs/access-control).
 
 ## Install
 
@@ -36,24 +62,18 @@ must provide the following inputs:
 
 -   if you use
     [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity)
-    (recommended), the Google service account to bind to the Kubernetes
-    service account of the controller. The Google service account must
-    have the
+    in your GKE cluster (recommended), the Google service account to bind to
+    the Kubernetes service account of the controller. The Google service
+    account must have the
     [Security Center Findings Editor](https://cloud.google.com/iam/docs/understanding-roles#security-center-roles)
     role or equivalent permissions on the Security Command Center source, or at
     the organization level.
 
-You can run the provided [setup script](scripts/setup.sh) to create these
-resources and set up the necessary permissions. To run this script, you must
-have an appropriate role for Security Command Center at the organization level,
-such as
-[Security Center Admin Editor](https://cloud.google.com/security-command-center/docs/access-control).
+You can deploy the controller by running the
+[deploy script](scripts/deploy.sh), or you can follow the steps in the
+[manifests `kpt` package documentation](manifests/README.md).
 
-After you have created the resources, you can deploy the controller by running
-the provided [deploy script](scripts/deploy.sh), or you can follow the steps in
-the [`kpt` package](manifests/README.md).
-
-## Build
+## Build binary
 
 Build the command-line tool for your platform:
 
@@ -61,7 +81,9 @@ Build the command-line tool for your platform:
 go build .
 ```
 
-Build and publish the container image for the controller:
+## Build container image
+
+Build and publish a container image for the controller:
 
 ```bash
 (cd tools ; go get github.com/google/ko/cmd/ko)
@@ -90,15 +112,15 @@ If you would like to use a different base image, edit the value of
     ./scripts/dev-cluster.sh
     ```
 
-4.  Create your Security Command Center source (`$SOURCE_NAME`) and set up your
-    findings editor Google service account (`$FINDINGS_EDITOR_SA`) with the
+4.  Create your Security Command Center source (`SOURCE_NAME`) and set up your
+    findings editor Google service account (`FINDINGS_EDITOR_SA`) with the
     required permissions:
 
     ```bash
     ./scripts/iam-setup.sh
     ```
 
-    The script prints out values for `$SOURCE_NAME` and `$FINDINGS_EDITOR_SA`.
+    The script prints out values for `SOURCE_NAME` and `FINDINGS_EDITOR_SA`.
     Set these as environment variables for use in later steps.
 
 5.  Create a copy of the `manifests` directory called `.kpt-skaffold`. This

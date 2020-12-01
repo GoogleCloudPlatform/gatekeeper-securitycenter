@@ -11,13 +11,13 @@ resources:
     Open Policy Agent Gatekeeper installed;
 
 -   a Security Command Center source where the controller should report
-    findings (`$SOURCE_NAME`); and
+    findings (`SOURCE_NAME`); and
 
 -   if you use
     [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity)
     (recommended), the Google service account to bind to the Kubernetes
     service account of the controller. The Google service account
-    (`$FINDINGS_EDITOR_SA`) must have the
+    (`FINDINGS_EDITOR_SA`) must have the
     [Security Center Findings Editor](https://cloud.google.com/iam/docs/understanding-roles#security-center-roles)
     role or equivalent permissions on the Security Command Center source, or at
     the organization level.
@@ -95,7 +95,7 @@ Details: https://googlecontainertools.github.io/kpt/reference/cfg/set/
 
 If your Google Kubernetes Engine (GKE) cluster uses
 [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity),
-add an annotation for the Google service account `$FINDINGS_EDITOR_SA` to bind
+add an annotation for the Google service account `FINDINGS_EDITOR_SA` to bind
 it to the `gatekeeper-securitycenter-controller` Kubernetes service account:
 
 ```bash

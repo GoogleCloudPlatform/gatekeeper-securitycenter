@@ -84,7 +84,7 @@ the resource manifests in these directories:
 When the script is done, it prints the values you need to deploy the controller
 resources using the `kpt` package in the [`manifests`](../manifests) directory.
 
-##
+## Troubleshooting
 
 The script is designed to be idempotent. This means that if you encounter
-issues, you can run the script again
+issues, you can run the script again.
