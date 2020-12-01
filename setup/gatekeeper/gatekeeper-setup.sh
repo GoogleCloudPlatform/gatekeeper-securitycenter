@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+#
 # Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,10 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.idea/
-.kpt-hydrated/
-.kpt-skaffold/
-.tmp-sink-dir/
-.vscode/
-gatekeeper-securitycenter
-gatekeeper-securitycenter-v*
+# This script installs OPA Gatekeeper in a GKE cluster.
+
+set -ef -o pipefail
+
+GATEKEEPER_VERSION=${GATEKEEPER_VERSION:-master}
+SCRIPT_DIR=$(dirname "$0")
+
+if [ ! -f "$SCRIPT_DIR/gatekeeper.yaml" ]; then
+    curl -sSLo "$SCRIPT_DIR/gatekeeper.yaml" "https://raw.githubusercontent.com/open-policy-agent/gatekeeper/$GATEKEEPER_VERSION/deploy/gatekeeper.yaml"
+fi
+

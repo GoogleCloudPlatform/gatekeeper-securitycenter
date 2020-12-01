@@ -1,0 +1,134 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: kpt.dev/v1alpha1
+kind: Kptfile
+metadata:
+  name: gatekeeper-securitycenter-prereqs
+packageMetadata:
+  shortDescription: Prerequisites for the gatekeeper-securitycenter controller
+openAPI:
+  definitions:
+    io.k8s.cli.setters.host-project-id:
+      description: Host project ID
+      x-k8s-cli:
+        setter:
+          name: host-project-id
+          value: host-project-id
+          setBy: package-default
+          required: true
+    io.k8s.cli.setters.managed-project-id:
+      description: Managed project ID
+      x-k8s-cli:
+        setter:
+          name: managed-project-id
+          value: managed-project-id
+          setBy: package-default
+          required: true
+    io.k8s.cli.setters.organization-id:
+      description: Organization ID
+      x-k8s-cli:
+        setter:
+          name: organization-id
+          value: ""
+          setBy: package-default
+          required: true
+    io.k8s.cli.setters.kcc-namespace:
+      description: Config Connector namespace
+      x-k8s-cli:
+        setter:
+          name: kcc-namespace
+          value: config-connector
+          setBy: package-default
+    io.k8s.cli.setters.kcc-gsa-name:
+      description: Config Connector service account name
+      x-k8s-cli:
+        setter:
+          name: kcc-gsa-name
+          value: config-connector
+          setBy: package-default
+    io.k8s.cli.substitutions.kcc-gsa:
+      x-k8s-cli:
+        substitution:
+          name: kcc-gsa
+          pattern: ${kcc-gsa-name}@${host-project-id}.iam.gserviceaccount.com
+          values:
+          - marker: ${kcc-gsa-name}
+            ref: '#/definitions/io.k8s.cli.setters.kcc-gsa-name'
+          - marker: ${host-project-id}
+            ref: '#/definitions/io.k8s.cli.setters.host-project-id'
+    io.k8s.cli.setters.admin-user:
+      description: Admin user identity
+      x-k8s-cli:
+        setter:
+          name: admin-user
+          value: admin@example.com
+          setBy: package-default
+          required: true
+    io.k8s.cli.setters.sources-admin-gsa-name:
+      description: SCC sources admin service account name
+      x-k8s-cli:
+        setter:
+          name: sources-admin-gsa-name
+          value: securitycenter-sources-admin
+          setBy: package-default
+    io.k8s.cli.setters.findings-editor-gsa-name:
+      description: SCC Gatekeeper findings editor service account name
+      x-k8s-cli:
+        setter:
+          name: findings-editor-gsa-name
+          value: gatekeeper-securitycenter
+          setBy: package-default
+    io.k8s.cli.substitutions.sources-admin-gsa-member:
+      x-k8s-cli:
+        substitution:
+          name: sources-admin-gsa-member
+          pattern: serviceAccount:${sources-admin-gsa-name}@${managed-project-id}.iam.gserviceaccount.com
+          values:
+          - marker: ${sources-admin-gsa-name}
+            ref: '#/definitions/io.k8s.cli.setters.sources-admin-gsa-name'
+          - marker: ${managed-project-id}
+            ref: '#/definitions/io.k8s.cli.setters.managed-project-id'
+    io.k8s.cli.substitutions.admin-member:
+      x-k8s-cli:
+        substitution:
+          name: admin-member
+          pattern: user:${admin-user}
+          values:
+          - marker: ${admin-user}
+            ref: '#/definitions/io.k8s.cli.setters.admin-user'
+    io.k8s.cli.setters.namespace:
+      description: Controller namespace
+      x-k8s-cli:
+        setter:
+          name: namespace
+          value: gatekeeper-securitycenter
+          setBy: package-default
+    io.k8s.cli.substitutions.workload-identity-member:
+      x-k8s-cli:
+        substitution:
+          name: workload-identity-member
+          pattern: serviceAccount:${host-project-id}.svc.id.goog[${namespace}/gatekeeper-securitycenter-controller]
+          values:
+          - marker: ${host-project-id}
+            ref: '#/definitions/io.k8s.cli.setters.host-project-id'
+          - marker: ${namespace}
+            ref: '#/definitions/io.k8s.cli.setters.namespace'
+    io.k8s.cli.setters.node-network-tags:
+      description: Network tags for cluster default node pool
+      x-k8s-cli:
+        setter:
+          name: node-network-tags
+          value: gke-config-connector-default-pool
+          setBy: package-default

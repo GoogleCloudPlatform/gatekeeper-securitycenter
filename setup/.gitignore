@@ -12,10 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.idea/
-.kpt-hydrated/
-.kpt-skaffold/
-.tmp-sink-dir/
-.vscode/
-gatekeeper-securitycenter
-gatekeeper-securitycenter-v*
+configconnector-operator.yaml
+gatekeeper.yaml

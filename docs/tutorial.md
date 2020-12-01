@@ -973,25 +973,87 @@ findings, wait a few minutes and try again.
 
 ## Automating the setup
 
-For future deployments, you can automate some of the steps in this tutorial by
-downloading and running a setup script that performs the following tasks:
+For future deployments, you can automate the following tasks:
 
--   Creates the sources admin and findings editor Google service accounts.
--   Grants the Cloud IAM role bindings to the Google service accounts.
--   Grants permissions to allow your Google identity to impersonate the Google
-    service accounts.
--   Creates the Security Command Center source.
+-   Creating a GKE cluster
+-   Installing Gatekeeper
+-   Creating the sources admin and findings editor Google service accounts.
+-   Granting the Cloud IAM role bindings to the Google service accounts.
+-   Granting permissions to allow your Google identity to impersonate the
+    sources admin Google service account.
+-   Creating the Security Command Center source.
 
-1.  Download the setup script:
+You have two options; using
+[Config Connector](https://cloud.google.com/config-connector/docs/overview),
+or using the `gcloud` tool. Both options use shell scripts to orchestrate the
+process
 
+
+### Automating using Config Connector
+
+1.  Get the setup `kpt` package:
+
+    ```bash
+    VERSION=$(curl -s https://api.github.com/repos/GoogleCloudPlatform/gatekeeper-securitycenter/releases/latest | jq -r '.tag_name')
+
+    DIR=gatekeeper-securitycenter-setup
+
+    kpt pkg get https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter.git/setup@$VERSION \
+        "$DIR"
     ```
-    curl -sSLO https://raw.githubusercontent.com/GoogleCloudPlatform/gatekeeper-securitycenter/main/scripts/setup.sh
+
+2.  Set environment variables:
+
+    ```bash
+    source "$DIR/setup.env"
     ```
 
-2.  Execute the script:
+    These environment variables will be used by the setup script in the next
+    step.
 
+    If you want to use an exisiting GKE cluster or existing Google service
+    accounts, edit the values in `setup.env` to match the names of your
+    existing resources before you source the file.
+
+3.  Run a script that creates a GKE cluster, installs Gatekeeper, creates
+    Google service accounts, Cloud IAM policy bindings, and a Security Command
+    Center source:
+
+    ```bash
+    "$DIR/setup.sh"
     ```
-    bash setup.sh
+
+    The script prints out the names of the Security Command Center source
+    (`SOURCE_NAME`) and the findings editor Google service account
+    (`FINDINGS_EDITOR_SA`). You need these values to deploy the controller to
+    your GKE cluster.
+
+### Automating using the `gcloud` tool
+
+1.  Download the development cluster script:
+
+    ```bash
+    curl -sSLO https://raw.githubusercontent.com/GoogleCloudPlatform/gatekeeper-securitycenter/main/scripts/dev-cluster.sh
+    ```
+
+2.  Download the IAM setup script:
+
+    ```bash
+    curl -sSLO https://raw.githubusercontent.com/GoogleCloudPlatform/gatekeeper-securitycenter/main/scripts/iam-setup.sh
+    ```
+
+3.  Run the development cluster script to create a GKE cluster and install
+    Gatekeeper:
+
+    ```bash
+    bash dev-cluster.sh
+    ```
+
+4.  Run the IAM setup script to create the Google service accounts, the Cloud
+    IAM policy bindings, and the Security Command Center source:
+
+    ```bash
+    bash iam-setup.sh
     ```
 
     The script prints out the names of the Security Command Center source

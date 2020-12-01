@@ -95,7 +95,7 @@ If you would like to use a different base image, edit the value of
     required permissions:
 
     ```bash
-    ./scripts/setup.sh
+    ./scripts/iam-setup.sh
     ```
 
     The script prints out values for `$SOURCE_NAME` and `$FINDINGS_EDITOR_SA`.

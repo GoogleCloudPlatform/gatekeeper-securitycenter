@@ -1,0 +1,36 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: core.cnrm.cloud.google.com/v1beta1
+kind: ConfigConnector
+metadata:
+  name: configconnector.core.cnrm.cloud.google.com
+spec:
+  mode: namespaced
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations:
+    cnrm.cloud.google.com/organization-id: "" # {"$kpt-set":"organization-id"}
+    cnrm.cloud.google.com/project-id: managed-project-id # {"$kpt-set":"managed-project-id"}
+  name: config-connector # {"$kpt-set":"kcc-namespace"}
+---
+apiVersion: core.cnrm.cloud.google.com/v1beta1
+kind: ConfigConnectorContext
+metadata:
+  name: configconnectorcontext.core.cnrm.cloud.google.com
+  namespace: config-connector # {"$kpt-set":"kcc-namespace"}
+spec:
+  googleServiceAccount: config-connector@$host-project-id.iam.gserviceaccount.com # {"$kpt-set":"kcc-gsa"}

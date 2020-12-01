@@ -194,6 +194,23 @@ and the managed project are the same project.
     The Config Connector operator installs custom resource definitions (CRDs)
     for Google Cloud resources in your GKE cluster.
 
+3.  Configure Config Connector to run in
+    [namespaced mode](https://cloud.google.com/config-connector/docs/how-to/advanced-install):
+
+    ```bash
+    cat << EOF | kubectl apply -f -
+    apiVersion: core.cnrm.cloud.google.com/v1beta1
+    kind: ConfigConnector
+    metadata:
+      name: configconnector.core.cnrm.cloud.google.com
+    spec:
+      mode: namespaced
+    EOF
+    ```
+
+    Namespaced mode supports managing multiple projects with separate
+    Google service accounts.
+
 3.  Create a Kubernetes namespace for the Config Connector resources you will
     create in this tutorial:
 

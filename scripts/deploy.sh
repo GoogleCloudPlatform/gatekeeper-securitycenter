@@ -60,4 +60,4 @@ if [[ ! -f "manifests/inventory-template.yaml" ]]; then
     kpt live init manifests --namespace "$INVENTORY_NAMESPACE"
 fi
 
-kpt live apply manifests --reconcile-timeout 2m --output table
+kpt live apply manifests --reconcile-timeout 2m --output events
