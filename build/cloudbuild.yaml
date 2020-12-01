@@ -46,4 +46,4 @@ options:
 substitutions:
   _GO_IMAGE: golang:1.15
   _PROJECT_ID: $PROJECT_ID
-timeout: 600s
+timeout: 1200s
