@@ -17,10 +17,10 @@ kind: ClusterRoleBinding
 metadata:
   name: cluster-admin-binding
 roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
   name: cluster-admin
+  kind: ClusterRole
+  apiGroup: rbac.authorization.k8s.io
 subjects:
-- apiGroup: rbac.authorization.k8s.io
+- name: admin@example.com # {"$kpt-set":"admin-user"}
   kind: User
-  name: admin@example.com # {"$kpt-set":"admin-user"}
+  apiGroup: rbac.authorization.k8s.io

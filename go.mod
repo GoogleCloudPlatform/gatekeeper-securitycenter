@@ -27,9 +27,9 @@ require (
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.16.0
-	google.golang.org/api v0.35.0
-	google.golang.org/genproto v0.0.0-20201119123407-9b1e624d6bc4
-	google.golang.org/grpc v1.33.2
+	google.golang.org/api v0.36.0
+	google.golang.org/genproto v0.0.0-20201203001206-6486ece9c497
+	google.golang.org/grpc v1.34.0
 	google.golang.org/protobuf v1.25.0
 	k8s.io/apimachinery v0.19.4
 	k8s.io/client-go v0.19.4

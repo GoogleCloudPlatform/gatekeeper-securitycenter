@@ -29,8 +29,8 @@ controller resources in a Google Kubernetes Engine (GKE) cluster.
 To install the `gatekeeper-securitycenter` controller, you must have set up the
 following prerequisite resources:
 
--   a Google Kubernetes Engine (GKE) cluster;
--   Policy Controller or Gatekeeper installed in the GKE cluster;
+-   a Kubernetes cluster, such as a Google Kubernetes Engine (GKE) cluster;
+-   Policy Controller or Gatekeeper installed in the Kubernetes cluster;
 -   Google service accounts with Cloud IAM policy bindings for Security Command
     Center; and
 -   a Security Command Center source for findings from the Policy Controller or
@@ -43,7 +43,8 @@ To create the prerequisite resources, you have three options:
     [Config Connector](https://cloud.google.com/config-connector/docs/overview).
 
 2.  Use the shell scripts in the [`scripts`](scripts) directory. These scripts
-    create resources using the `gcloud` tool.
+    create resources using the `gcloud` tool from the
+    [Google Cloud SDK](https://cloud.google.com/sdk).
 
 3.  Follow the step-by-step instructions in the [tutorial](docs/tutorial.md).
 
@@ -60,11 +61,10 @@ must provide the following inputs:
     should report findings, in the format
     `organizations/[ORGANIZATION_ID]/sources/[SOURCE_ID]`; and
 
--   if you use
+-   if you use a Google Kubernetes Engine (GKE) cluster with
     [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity)
-    in your GKE cluster (recommended), the Google service account to bind to
-    the Kubernetes service account of the controller. The Google service
-    account must have the
+    (recommended), the Google service account to bind to the Kubernetes service
+    account of the controller. The Google service account must have the
     [Security Center Findings Editor](https://cloud.google.com/iam/docs/understanding-roles#security-center-roles)
     role or equivalent permissions on the Security Command Center source, or at
     the organization level.
@@ -78,7 +78,7 @@ You can deploy the controller by running the
 Build the command-line tool for your platform:
 
 ```bash
-go build .
+go get github.com/GoogleCloudPlatform/gatekeeper-securitycenter
 ```
 
 ## Build container image
@@ -86,6 +86,8 @@ go build .
 Build and publish a container image for the controller:
 
 ```bash
+git clone https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter.git
+cd gatekeeper-securitycenter
 (cd tools ; go get github.com/google/ko/cmd/ko)
 export KO_DOCKER_REPO=gcr.io/$(gcloud config get-value core/project)
 ko publish . --base-import-paths --tags latest
@@ -156,7 +158,7 @@ If you would like to use a different base image, edit the value of
 9.  Deploy the resources and start the Skaffold development mode watch loop:
 
     ```bash
-    skaffold dev
+    skaffold dev --default-repo=gcr.io/$(gcloud config get-value core/project)
     ```
 
     `kpt` creates a directory called `.kpt-hydrated` to store the hydrated

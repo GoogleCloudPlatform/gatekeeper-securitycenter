@@ -39,7 +39,7 @@ set -euf -o pipefail
 CLOUDSDK_CORE_ACCOUNT=${CLOUDSDK_CORE_ACCOUNT:-$(gcloud config list --format 'value(core.account)')}
 CLOUDSDK_CORE_PROJECT=${CLOUDSDK_CORE_PROJECT:-$(gcloud config list --format 'value(core.project)')}
 
-CLUSTER=${CLUSTER:-gatekeeper-securitycenter-tutorial}
+CLUSTER=${CLUSTER:-gatekeeper-securitycenter}
 MACHINE_TYPE=${MACHINE_TYPE:-n1-standard-1}
 NUM_NODES=${NUM_NODES:-3}
 RELEASE_CHANNEL=${RELEASE_CHANNEL:-regular}

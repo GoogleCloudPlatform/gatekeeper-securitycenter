@@ -33,7 +33,13 @@ GCLOUD_ZONE=${CLOUDSDK_COMPUTE_ZONE:-$(gcloud config list --format 'value(comput
 DEFAULT_ZONE=${GCLOUD_ZONE:-us-central1-f}
 ZONE=${ZONE:-$DEFAULT_ZONE}
 
-if gcloud container clusters describe "$CLUSTER" --project="$HOST_PROJECT_ID" --zone="$ZONE" --no-user-output-enabled 2> /dev/null ; then
+GOOGLE_CLOUD_APIS=${GOOGLE_CLOUD_APIS:-""}
+gcloud services enable container.googleapis.com $GOOGLE_CLOUD_APIS --project "$HOST_PROJECT_ID"
+if [ ! -z "$GOOGLE_CLOUD_APIS" ]; then
+    gcloud services enable $GOOGLE_CLOUD_APIS --project "$MANAGED_PROJECT_ID"
+fi
+
+if gcloud container clusters describe "$CLUSTER" --project "$HOST_PROJECT_ID" --zone "$ZONE" --no-user-output-enabled 2> /dev/null ; then
     echo "Using existing GKE cluster $CLUSTER in zone $ZONE"
 else
     MAX_CPU=${MAX_CPU:-12}

@@ -22,10 +22,10 @@ spec:
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: config-connector # {"$kpt-set":"kcc-namespace"}
   annotations:
     cnrm.cloud.google.com/organization-id: "" # {"$kpt-set":"organization-id"}
     cnrm.cloud.google.com/project-id: managed-project-id # {"$kpt-set":"managed-project-id"}
-  name: config-connector # {"$kpt-set":"kcc-namespace"}
 ---
 apiVersion: core.cnrm.cloud.google.com/v1beta1
 kind: ConfigConnectorContext
