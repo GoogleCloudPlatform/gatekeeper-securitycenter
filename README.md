@@ -52,6 +52,14 @@ For all options, you must have an appropriate Cloud IAM role for Security
 Command Center at the organization level, such as
 [Security Center Admin Editor](https://cloud.google.com/security-command-center/docs/access-control).
 
+If your user account is not associated with an
+[organization](https://cloud.google.com/resource-manager/docs/creating-managing-organization)
+on Google Cloud, you can create an organization resource by signing up for
+either [Cloud Identity](https://cloud.google.com/identity) or
+[Google Workspace](https://workspace.google.com/) (formerly G Suite) using a
+domain you own. Cloud Identity offers a
+[free edition](https://gsuite.google.com/signup/gcpidentity/welcome).
+
 ## Install
 
 To install the `gatekeeper-securitycenter` controller in your cluster, you
