@@ -59,7 +59,7 @@ func (c *Client) GetConstraintGroupResources() ([]schema.GroupResource, error) {
 	categoryExpander := restmapper.NewDiscoveryCategoryExpander(c.discovery)
 	groupResources, exists := categoryExpander.Expand(gatekeeperConstraintCategory)
 	if !exists {
-		return nil, fmt.Errorf("could not find resource types with category <%v>", gatekeeperConstraintCategory)
+		c.log.Info("could not find constraint resource types", "category", gatekeeperConstraintCategory)
 	}
 	return groupResources, nil
 }
