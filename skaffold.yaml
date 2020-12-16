@@ -22,7 +22,10 @@ build:
       dependencies:
         paths:
         - "go.mod"
-        - "**.go"
+        - "*.go"
+        - "cmd"
+        - "pkg"
+        - "third_party"
   tagPolicy:
     sha256: {}
 deploy:
