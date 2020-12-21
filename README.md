@@ -3,26 +3,29 @@
 `gatekeeper-securitycenter` is
 
 -   a Kubernetes controller that creates
-    [Security Command Center](https://cloud.google.com/security-command-center)
+    [Security Command Center](https://cloud.google.com/security-command-center/docs)
     [findings](https://cloud.google.com/security-command-center/docs/reference/rest/v1/organizations.sources.findings)
     for violations reported by the
     [audit controller](https://cloud.google.com/anthos-config-management/docs/how-to/auditing-constraints)
     in
     [Policy Controller](https://cloud.google.com/anthos-config-management/docs/concepts/policy-controller)
     and
-    [Open Policy Agent (OPA) Gatekeeper](https://github.com/open-policy-agent/gatekeeper);
-    and
+    [Open Policy Agent (OPA) Gatekeeper](https://github.com/open-policy-agent/gatekeeper).
 
 -   a command-line tool that creates and manages the IAM policies of
     Security Command Center
     [sources](https://cloud.google.com/security-command-center/docs/reference/rest/v1/organizations.sources).
+
+It requires
+[Security Command Center Standard tier](https://cloud.google.com/security-command-center/pricing#standard_tier_pricing).
 
 ## Tutorial
 
 See the accompanying [tutorial](docs/tutorial.md) for detailed explanation and
 step-by-step instructions on how to create a Security Command Center source and
 Google service accounts with the required permissions, and install the
-controller resources in a Google Kubernetes Engine (GKE) cluster.
+controller resources in a
+[Google Kubernetes Engine (GKE)](https://cloud.google.com/kubernetes-engine/docs) cluster.
 
 ## Prerequisites
 
@@ -169,7 +172,7 @@ If you would like to use a different base image, edit the value of
     skaffold dev --default-repo=gcr.io/$(gcloud config get-value core/project)
     ```
 
-    `kpt` creates a directory called `.kpt-hydrated` to store the hydrated
+    Skaffold creates a directory called `.kpt-hydrated` to store the hydrated
     manifests and the `inventory-template.yaml` file.
 
 ## Disclaimer
