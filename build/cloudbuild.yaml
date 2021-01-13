@@ -20,8 +20,8 @@ steps:
   - '-eu'
   - '-c'
   - |-
-    mkdir -p $GOPATH/bin
-    curl -sSL "https://github.com/google/ko/releases/download/v${_KO_VERSION}/ko_${_KO_VERSION}_Linux_x86_64.tar.gz" | tar -xzC $GOPATH/bin ko
+    mkdir -p /workspace/.gopath/bin
+    curl -sSL "https://github.com/google/ko/releases/download/v${_KO_VERSION}/ko_${_KO_VERSION}_Linux_x86_64.tar.gz" | tar -xzC /workspace/.gopath/bin ko
 - id: image
   name: $_GO_IMAGE
   entrypoint: sh
@@ -32,7 +32,7 @@ steps:
     export GOFLAGS="-mod=readonly -ldflags=-X=$(go list)/cmd/version.Version=$TAG_NAME"
     go version
     go env
-    $GOPATH/bin/ko publish --base-import-paths --platform all --tags latest,$TAG_NAME .
+    /workspace/.gopath/bin/ko publish --base-import-paths --platform all --tags latest,$TAG_NAME .
   env:
   - 'KO_DOCKER_REPO=gcr.io/$_PROJECT_ID'
 options:
