@@ -24,10 +24,9 @@ steps:
     curl -sSL "https://github.com/google/ko/releases/download/v${_KO_VERSION}/ko_${_KO_VERSION}_Linux_x86_64.tar.gz" | tar -xzC $GOPATH/bin ko
 - id: image
   name: $_GO_IMAGE
-  entrypoint: bash
+  entrypoint: sh
   args:
-  - -eEuo
-  - pipefail
+  - -eu
   - -c
   - |-
     export GOFLAGS="-mod=readonly -ldflags=-X=$(go list)/cmd/version.Version=$TAG_NAME"
