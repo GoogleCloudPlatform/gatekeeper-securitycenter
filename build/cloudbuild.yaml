@@ -14,12 +14,14 @@
 
 steps:
 - id: ko
-  name: $_GO_IMAGE
-  dir: tools
-  entrypoint: go
+  name: $_CURL_IMAGE
+  entrypoint: sh
   args:
-  - get
-  - github.com/google/ko/cmd/ko
+  - '-eu'
+  - '-c'
+  - |-
+    mkdir -p /workspace/.gopath/bin
+    curl -sSL "https://github.com/google/ko/releases/download/v${_KO_VERSION}/ko_${_KO_VERSION}_Linux_x86_64.tar.gz" | tar -xzC /workspace/.gopath/bin ko
 - id: image
   name: $_GO_IMAGE
   entrypoint: bash
@@ -44,6 +46,8 @@ options:
   - 'TAG_NAME=$TAG_NAME'
   logging: GCS_ONLY
 substitutions:
-  _GO_IMAGE: golang:1.15
+  _CURL_IMAGE: gcr.io/cloud-builders/curl
+  _GO_IMAGE: gcr.io/cloud-builders/go
+  _KO_VERSION: '0.7.0'
   _PROJECT_ID: $PROJECT_ID
 timeout: 1200s

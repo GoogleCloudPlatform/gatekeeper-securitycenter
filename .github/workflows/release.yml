@@ -70,15 +70,13 @@ jobs:
     - name: Create checksums
       run: shasum -a 256 gatekeeper-securitycenter_* > SHA256SUMS
 
-    - name: Install crane and ko
+    - name: Install ko
       run: |
-        go get github.com/google/go-containerregistry/cmd/crane
-        go get github.com/google/ko/cmd/ko
-      working-directory: tools
+        curl -sSL "https://github.com/google/ko/releases/download/v0.7.0/ko_0.7.0_Linux_x86_64.tar.gz" | tar -xzC $(go env GOPATH)/bin ko
 
     - name: Build and push container image
       run: |
-        $(go env GOPATH)/bin/crane auth login docker.pkg.github.com -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+        $(go env GOPATH)/bin/ko auth login docker.pkg.github.com -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
         echo -n 'IMAGE_WITH_DIGEST=' >> $GITHUB_ENV
         $(go env GOPATH)/bin/ko publish . --base-import-paths --platform linux/amd64 --tags latest,$TAG_NAME >> $GITHUB_ENV
       env:
@@ -104,7 +102,7 @@ jobs:
         git checkout -B release-$TAG_NAME
 
     - name: Set new image tag
-      uses: docker://gcr.io/kpt-dev/kpt:v0.37.0
+      uses: docker://gcr.io/kpt-dev/kpt:v0.37.1
       with:
         args: cfg set manifests image gcr.io/cloud-solutions-images/${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }}
 
