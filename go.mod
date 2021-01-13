@@ -17,7 +17,7 @@ module github.com/GoogleCloudPlatform/gatekeeper-securitycenter
 go 1.15
 
 require (
-	cloud.google.com/go v0.74.0
+	cloud.google.com/go v0.75.0
 	github.com/go-logr/logr v0.3.0
 	github.com/go-logr/stdr v0.3.0
 	github.com/go-logr/zapr v0.3.0
@@ -28,9 +28,9 @@ require (
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.16.0
 	google.golang.org/api v0.36.0
-	google.golang.org/genproto v0.0.0-20201214200347-8c77b98c765d
-	google.golang.org/grpc v1.34.0
+	google.golang.org/genproto v0.0.0-20210111234610-22ae2b108f89
+	google.golang.org/grpc v1.34.1
 	google.golang.org/protobuf v1.25.0
-	k8s.io/apimachinery v0.19.5
-	k8s.io/client-go v0.19.5
+	k8s.io/apimachinery v0.19.6
+	k8s.io/client-go v0.19.6
 )

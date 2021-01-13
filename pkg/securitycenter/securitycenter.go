@@ -63,7 +63,9 @@ func NewClient(ctx context.Context, log logr.Logger, googleServiceAccount string
 	}
 	if googleServiceAccount != "" {
 		log.V(1).Info("impersonating Google service account", "serviceAccount", googleServiceAccount)
-		opts = append(opts, option.ImpersonateCredentials(googleServiceAccount))
+		opts = append(opts,
+			option.ImpersonateCredentials(googleServiceAccount),
+			option.WithScopes(securitycenterv1.DefaultAuthScopes()...))
 	}
 	securitycenterClient, err := securitycenterv1.NewClient(ctx, opts...)
 	if err != nil {
