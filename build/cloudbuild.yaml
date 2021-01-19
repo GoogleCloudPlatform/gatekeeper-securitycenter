@@ -12,6 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+options:
+  dynamic_substitutions: true
+  env:
+  - 'CGO_ENABLED=0'
+  - 'GOPATH=/workspace/.gopath'
+  - 'GOROOT=/usr/local/go'
+  - 'PROJECT_ID=$PROJECT_ID'
+  - 'TAG_NAME=$TAG_NAME'
+  logging: GCS_ONLY
 steps:
 - id: ko
   name: $_CURL_IMAGE
@@ -35,18 +44,9 @@ steps:
     /workspace/.gopath/bin/ko publish --base-import-paths --platform all --tags latest,$TAG_NAME .
   env:
   - 'KO_DOCKER_REPO=gcr.io/$_PROJECT_ID'
-options:
-  dynamic_substitutions: true
-  env:
-  - 'CGO_ENABLED=0'
-  - 'GOPATH=/workspace/.gopath'
-  - 'GOROOT=/usr/local/go'
-  - 'PROJECT_ID=$PROJECT_ID'
-  - 'TAG_NAME=$TAG_NAME'
-  logging: GCS_ONLY
 substitutions:
   _CURL_IMAGE: gcr.io/cloud-builders/curl
   _GO_IMAGE: gcr.io/cloud-builders/go
-  _KO_VERSION: '0.7.0'
+  _KO_VERSION: '0.7.2'
   _PROJECT_ID: $PROJECT_ID
 timeout: 1200s
