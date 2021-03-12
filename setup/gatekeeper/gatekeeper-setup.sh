@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This script installs OPA Gatekeeper in a GKE cluster.
+# This script installs OPA Gatekeeper in a Kubernetes cluster.
 
 set -ef -o pipefail
 

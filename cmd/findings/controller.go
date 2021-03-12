@@ -20,7 +20,7 @@ import (
 
 	"github.com/go-logr/logr"
 
-	"github.com/GoogleCloudPlatform/gatekeeper-securitycenter/pkg/sync"
+	"github.com/googlecloudplatform/gatekeeper-securitycenter/pkg/sync"
 )
 
 // Start the control loop

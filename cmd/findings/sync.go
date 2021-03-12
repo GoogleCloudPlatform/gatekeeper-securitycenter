@@ -19,9 +19,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/GoogleCloudPlatform/gatekeeper-securitycenter/cmd/flag"
-	"github.com/GoogleCloudPlatform/gatekeeper-securitycenter/pkg/logging"
-	"github.com/GoogleCloudPlatform/gatekeeper-securitycenter/pkg/sync"
+	"github.com/googlecloudplatform/gatekeeper-securitycenter/cmd/flag"
+	"github.com/googlecloudplatform/gatekeeper-securitycenter/pkg/logging"
+	"github.com/googlecloudplatform/gatekeeper-securitycenter/pkg/sync"
 )
 
 var (

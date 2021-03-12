@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.idea/
-.kpt-hydrated/
-.tmp-sink-dir/
-.vscode/
-gatekeeper-securitycenter
-gatekeeper-securitycenter-v*
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: inventory
+  namespace: gatekeeper-securitycenter
+  labels:
+    cli-utils.sigs.k8s.io/inventory-id: 4ad3bef4-8811-4db3-be01-53fa19374801

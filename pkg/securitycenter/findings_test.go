@@ -24,7 +24,7 @@ import (
 	logrtesting "github.com/go-logr/logr/testing"
 	securitycenterpb "google.golang.org/genproto/googleapis/cloud/securitycenter/v1"
 
-	"github.com/GoogleCloudPlatform/gatekeeper-securitycenter/pkg/logging"
+	"github.com/googlecloudplatform/gatekeeper-securitycenter/pkg/logging"
 )
 
 const source = "organizations/123/sources/456"

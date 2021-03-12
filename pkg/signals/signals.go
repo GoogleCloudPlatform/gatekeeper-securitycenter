@@ -17,7 +17,7 @@ package signals
 import (
 	"context"
 
-	"github.com/GoogleCloudPlatform/gatekeeper-securitycenter/third_party/sigs.k8s.io/controller-runtime/pkg/manager/signals"
+	"github.com/googlecloudplatform/gatekeeper-securitycenter/third_party/sigs.k8s.io/controller-runtime/pkg/manager/signals"
 )
 
 // SetupSignalHandler creates a context that handles interrupt and shutdown signals.

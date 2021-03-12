@@ -17,8 +17,8 @@
 # This scripts orchestrates the creation of the prerequisite resources for the
 # gatekeeper-securitycenter Kubernetes controller.
 #
-# It uses `kpt` to manage resources manifests and Config Connector to create
-# the Google Cloud resources.
+# It uses kpt to manage resources manifests and Config Connector to create the
+# Google Cloud resources.
 
 set -ef -o pipefail
 

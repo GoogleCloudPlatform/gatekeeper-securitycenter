@@ -23,7 +23,7 @@ import (
 	"github.com/go-logr/logr"
 	"google.golang.org/api/option"
 
-	"github.com/GoogleCloudPlatform/gatekeeper-securitycenter/pkg/logging"
+	"github.com/googlecloudplatform/gatekeeper-securitycenter/pkg/logging"
 )
 
 const (

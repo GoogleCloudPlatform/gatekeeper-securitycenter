@@ -16,8 +16,8 @@ name: Release
 
 on:
   push:
-    tags:
-    - 'v*-rc*'
+    branches:
+    - 'release-v*'
 
 jobs:
   release:
@@ -32,7 +32,7 @@ jobs:
     - name: Setup Go
       uses: actions/setup-go@v1
       with:
-        go-version: 1.15
+        go-version: 1.16
 
     - name: Restore dependency cache
       uses: actions/cache@v2
@@ -47,25 +47,26 @@ jobs:
         MODULE_NAME=$(go list | tr '[:upper:]' '[:lower:]')
         echo IMAGE_NAME=${MODULE_NAME##*/} >> $GITHUB_ENV
         echo IMAGE_REPO=$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
-        RC_TAG=${GITHUB_REF##*/}
-        echo TAG_NAME=${RC_TAG%%-rc*} >> $GITHUB_ENV
+        echo VERSION=${GITHUB_REF#refs/heads/release-} >> $GITHUB_ENV
+        echo COMMITISH=$(git rev-parse HEAD) >> $GITHUB_ENV
 
     - name: Set flags
       run: |
-        echo GOFLAGS="-mod=readonly -ldflags=-X=$(go list)/cmd/version.Version=$TAG_NAME" >> $GITHUB_ENV
+        echo GOFLAGS="-v -ldflags=-X=$(go list)/pkg/version.Version=$VERSION" >> $GITHUB_ENV
 
     - name: Print env
       run: |
         go env
 
-    - name: Test
-      run: go test -v -count=1 -timeout=10m -vet="asmdecl,assign,atomic,bools,buildtag,cgocall,composites,copylocks,errorsas,httpresponse,loopclosure,lostcancel,nilfunc,printf,shift,stdmethods,structtag,tests,unmarshal,unreachable,unsafeptr,unusedresult" ./...
+    - name: Unit test
+      run: go test -v -count=1 -short -timeout=5m -vet=asmdecl,assign,atomic,bools,buildtag,cgocall,composites,copylocks,errorsas,httpresponse,loopclosure,lostcancel,nilfunc,printf,shift,stdmethods,structtag,tests,unmarshal,unreachable,unsafeptr,unusedresult ./...
 
     - name: Build binaries
       run: |
-        GOOS=darwin GOARCH=amd64 go build -o gatekeeper-securitycenter_darwin_amd64 .
-        GOOS=linux GOARCH=amd64 go build -o gatekeeper-securitycenter_linux_amd64 .
-        GOOS=linux GOARCH=arm64 go build -o gatekeeper-securitycenter_linux_arm64 .
+        GOOS=darwin GOARCH=amd64 go build -o gatekeeper-securitycenter_Darwin_x86_64 .
+        GOOS=darwin GOARCH=arm64 go build -o gatekeeper-securitycenter_Darwin_arm64 .
+        GOOS=linux GOARCH=amd64 go build -o gatekeeper-securitycenter_Linux_x86_64 .
+        GOOS=linux GOARCH=arm64 go build -o gatekeeper-securitycenter_Linux_aarch64 .
 
     - name: Create checksums
       run: shasum -a 256 gatekeeper-securitycenter_* > SHA256SUMS
@@ -73,48 +74,38 @@ jobs:
     - name: Install ko
       run: |
         mkdir -p $(go env GOPATH)/bin
-        curl -sSL "https://github.com/google/ko/releases/download/v0.7.2/ko_0.7.2_Linux_x86_64.tar.gz" | tar -xzC $(go env GOPATH)/bin ko
+        curl -sSL "https://github.com/google/ko/releases/download/v0.8.1/ko_0.8.1_Linux_x86_64.tar.gz" | tar -xzC $(go env GOPATH)/bin ko
 
     - name: Build and push container image
       run: |
         $(go env GOPATH)/bin/ko login docker.pkg.github.com -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
-        echo -n 'IMAGE_WITH_DIGEST=' >> $GITHUB_ENV
-        $(go env GOPATH)/bin/ko publish . --base-import-paths --platform linux/amd64 --tags latest,$TAG_NAME >> $GITHUB_ENV
+        $(go env GOPATH)/bin/ko publish . --base-import-paths --platform linux/amd64 --tags latest,$VERSION
       env:
         KO_DOCKER_REPO: docker.pkg.github.com/${{ env.IMAGE_REPO }}
+
+    - name: Install crane
+      run: |
+        mkdir -p $(go env GOPATH)/bin
+        curl -sSL "https://github.com/google/go-containerregistry/releases/download/v0.4.1/go-containerregistry_Linux_x86_64.tar.gz" | tar -xzC $(go env GOPATH)/bin crane
+
+    - name: Get GCR image digest
+      run: |
+        echo -n 'GCR_IMAGE_DIGEST=' >> $GITHUB_ENV
+        $(go env GOPATH)/bin/crane digest gcr.io/cloud-solutions-images/gatekeeper-securitycenter:$VERSION >> $GITHUB_ENV
 
     - name: Create release body file
       run: |
         cat << EOF > ${{ runner.temp }}/body.md
         ## Images
 
-        Google Container Registry:
+        Google Container Registry (multi-platform):
 
-            gcr.io/cloud-solutions-images/$IMAGE_NAME:$TAG_NAME (multi-arch)
+            gcr.io/cloud-solutions-images/gatekeeper-securitycenter:$VERSION@$GCR_IMAGE_DIGEST
 
-        GitHub Packages:
+        GitHub Packages (\`linux/amd64\`):
 
-            docker.pkg.github.com/$IMAGE_REPO/$IMAGE_NAME:$TAG_NAME (linux/amd64)
-            ${IMAGE_WITH_DIGEST##*@}
+            docker.pkg.github.com/$IMAGE_REPO/$IMAGE_NAME:$VERSION
         EOF
-
-    - name: Create release branch
-      run: |
-        git checkout -B release-$TAG_NAME
-
-    - name: Set new image tag
-      uses: docker://gcr.io/kpt-dev/kpt:v0.37.1
-      with:
-        args: cfg set manifests image gcr.io/cloud-solutions-images/${{ env.IMAGE_NAME }}:${{ env.TAG_NAME }}
-
-    - name: Commit manifest with image tag
-      run: |
-        git config user.name github-actions
-        git config user.email github-actions@github.com
-        git add manifests
-        git commit -m "$TAG_NAME"
-        git push --force origin release-$TAG_NAME
-        echo COMMITISH=$(git rev-parse HEAD) >> $GITHUB_ENV
 
     - name: Create release
       id: create_release
@@ -122,8 +113,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ env.TAG_NAME }}
-        release_name: ${{ env.TAG_NAME }}
+        tag_name: ${{ env.VERSION }}
+        release_name: ${{ env.VERSION }}
         body_path: ${{ runner.temp }}/body.md
         commitish: ${{ env.COMMITISH }}
 
@@ -133,8 +124,18 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: gatekeeper-securitycenter_darwin_amd64
-        asset_name: gatekeeper-securitycenter_darwin_amd64
+        asset_path: gatekeeper-securitycenter_Darwin_x86_64
+        asset_name: gatekeeper-securitycenter_Darwin_x86_64
+        asset_content_type: application/octet-stream
+
+    - name: Upload binary darwin arm64
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: gatekeeper-securitycenter_Darwin_arm64
+        asset_name: gatekeeper-securitycenter_Darwin_arm64
         asset_content_type: application/octet-stream
 
     - name: Upload binary linux amd64
@@ -143,8 +144,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: gatekeeper-securitycenter_linux_amd64
-        asset_name: gatekeeper-securitycenter_linux_amd64
+        asset_path: gatekeeper-securitycenter_Linux_x86_64
+        asset_name: gatekeeper-securitycenter_Linux_x86_64
         asset_content_type: application/octet-stream
 
     - name: Upload binary linux arm64
@@ -153,8 +154,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: gatekeeper-securitycenter_linux_arm64
-        asset_name: gatekeeper-securitycenter_linux_arm64
+        asset_path: gatekeeper-securitycenter_Linux_aarch64
+        asset_name: gatekeeper-securitycenter_Linux_aarch64
         asset_content_type: application/octet-stream
 
     - name: Upload checksum file
@@ -166,3 +167,17 @@ jobs:
         asset_path: SHA256SUMS
         asset_name: SHA256SUMS
         asset_content_type: text/plain
+
+    - name: Update version in readme
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git reset --hard
+        git remote update
+        git checkout main
+        git pull --no-edit --no-rebase --strategy-option=theirs origin
+        sed -i~ "s/VERSION=.*/VERSION=$VERSION/" manifests/README.md
+        git add manifests/README.md
+        git commit -m "Update version in docs to $VERSION"
+        git pull --no-edit --no-rebase --strategy-option=ours origin
+        git push origin main

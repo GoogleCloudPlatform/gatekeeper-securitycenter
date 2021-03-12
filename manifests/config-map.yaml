@@ -17,6 +17,9 @@ kind: ConfigMap
 metadata:
   name: gatekeeper-securitycenter-config
   namespace: gatekeeper-securitycenter # {"$kpt-set":"namespace"}
+  labels:
+    control-plane: controller-manager
+    gatekeeper-securitycenter/system: 'yes'
 data:
   CLUSTER_NAME: "" # {"$kpt-set":"cluster"}
   SOURCE_NAME: organizations/$ORGANIZATION_ID/sources/$SOURCE_ID # {"$kpt-set":"source"}

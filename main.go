@@ -19,10 +19,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/GoogleCloudPlatform/gatekeeper-securitycenter/cmd/findings"
-	"github.com/GoogleCloudPlatform/gatekeeper-securitycenter/cmd/sources"
-	"github.com/GoogleCloudPlatform/gatekeeper-securitycenter/cmd/version"
-	"github.com/GoogleCloudPlatform/gatekeeper-securitycenter/pkg/signals"
+	"github.com/googlecloudplatform/gatekeeper-securitycenter/cmd/findings"
+	"github.com/googlecloudplatform/gatekeeper-securitycenter/cmd/sources"
+	"github.com/googlecloudplatform/gatekeeper-securitycenter/cmd/version"
+	"github.com/googlecloudplatform/gatekeeper-securitycenter/pkg/signals"
 
 	// blank import for all k8s auth plugins
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -31,15 +31,15 @@ import (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "gatekeeper-security",
-	Short: "Creates Security Command Center findings from Gatekeeper and Policy Controller violations",
+	Short: "Creates Security Command Center findings from OPA Gatekeeper and Policy Controller violations",
 	Long: `gatekeeper-securitycenter is:
 
 - a Kubernetes controller that creates Security Command Center
-  findings for violations reported by Gatekeeper/Policy Controller's
-  audit controller; and
+  findings for violations reported by OPA Gatekeeper/Policy Controller's
+  audit controller
 
 - a command-line tool that creates and manages the IAM policies of
-  Security Command Center sources.`,
+  Security Command Center sources`,
 }
 
 func init() {

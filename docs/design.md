@@ -49,7 +49,7 @@ For each iteration of the control loop:
         The constraint `Kind` is used as the finding category. The request
         contains a finding ID, see the [section below](#finding-id) for how
         this is determined. For
-        [Config Connector resources](config-connector-gatekeeper-tutorial.md),
+        [Config Connector resources](https://cloud.google.com/solutions/policy-compliant-resources),
         use the `status.selfLink` value as the resource name. This results in
         Security Command Center rendering a link directly to the Google Cloud
         resource in the finding.

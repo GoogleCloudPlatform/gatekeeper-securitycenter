@@ -38,14 +38,11 @@
 #
 # - Workload Identity is enabled in the GKE cluster;
 #
-# - you have installed `jq`; and.
+# - you have installed jq; and.
 #
-# - you have installed the Go distribution, or you can set values for `OS`
-#   (e.g., `linux`, `darwin`) and `ARCH` (e.g., `amd64`, `arm64`) before
-#   running this script.
-#
-# To set this up, and to see explanations for the commands used in this script,
-# see the instructions in <docs/tutorial.md>.
+# To read explanations for the commands used in this script, see the
+# instructions in the tutorial:
+# https://cloud.google.com/architecture/reporting-policy-controller-audit-violations-security-command-center
 
 set -euf -o pipefail
 
@@ -67,12 +64,10 @@ K8S_NAMESPACE=${K8S_NAMESPACE:-gatekeeper-securitycenter}
 K8S_SA=${K8S_SA:-gatekeeper-securitycenter-controller}
 
 VERSION=${VERSION:-$(curl -s https://api.github.com/repos/GoogleCloudPlatform/gatekeeper-securitycenter/releases/latest | jq -r '.tag_name')}
-OS=${OS:-$(go env GOOS)}
-ARCH=${ARCH:-$(go env GOARCH)}
 
 if [[ ! -x "gatekeeper-securitycenter-$VERSION" ]]; then
     >&2 echo Downloading "gatekeeper-securitycenter-$VERSION"
-    curl -sSLo "gatekeeper-securitycenter-$VERSION" "https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter/releases/download/${VERSION}/gatekeeper-securitycenter_${OS}_${ARCH}"
+    curl -sSLo "gatekeeper-securitycenter-$VERSION" "https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter/releases/download/${VERSION}/gatekeeper-securitycenter_$(uname -s)_$(uname -m)"
     chmod +x "gatekeeper-securitycenter-$VERSION"
 fi
 
@@ -99,8 +94,12 @@ gcloud iam service-accounts add-iam-policy-binding \
     --member "user:$CLOUDSDK_CORE_ACCOUNT" \
     --role roles/iam.serviceAccountTokenCreator > /dev/null
 
-# Create the Security Command Center source
+# Create the Security Command Center source if it doesn't exist
 
+SOURCE_NAME=${SOURCE_NAME:-$("./gatekeeper-securitycenter-$VERSION" sources list \
+    --organization "$ORGANIZATION_ID" \
+    --impersonate-service-account "$SOURCES_ADMIN_SA" \
+    | jq -r ".[] | select(.display_name==\"$SOURCE_DISPLAY_NAME\") | .name")}
 SOURCE_NAME=${SOURCE_NAME:-$("./gatekeeper-securitycenter-$VERSION" sources create \
     --organization "$ORGANIZATION_ID" \
     --display-name "$SOURCE_DISPLAY_NAME" \

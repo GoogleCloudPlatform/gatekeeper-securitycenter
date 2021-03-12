@@ -28,10 +28,10 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/GoogleCloudPlatform/gatekeeper-securitycenter/pkg/discovery"
-	"github.com/GoogleCloudPlatform/gatekeeper-securitycenter/pkg/dynamic"
-	"github.com/GoogleCloudPlatform/gatekeeper-securitycenter/pkg/print"
-	"github.com/GoogleCloudPlatform/gatekeeper-securitycenter/pkg/securitycenter"
+	"github.com/googlecloudplatform/gatekeeper-securitycenter/pkg/discovery"
+	"github.com/googlecloudplatform/gatekeeper-securitycenter/pkg/dynamic"
+	"github.com/googlecloudplatform/gatekeeper-securitycenter/pkg/print"
+	"github.com/googlecloudplatform/gatekeeper-securitycenter/pkg/securitycenter"
 )
 
 const cnrmAnnotationProjectID = "cnrm.cloud.google.com/project-id"

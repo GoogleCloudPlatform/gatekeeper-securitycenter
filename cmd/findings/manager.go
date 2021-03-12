@@ -23,7 +23,7 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	"github.com/GoogleCloudPlatform/gatekeeper-securitycenter/cmd/flag"
+	"github.com/googlecloudplatform/gatekeeper-securitycenter/cmd/flag"
 )
 
 var (

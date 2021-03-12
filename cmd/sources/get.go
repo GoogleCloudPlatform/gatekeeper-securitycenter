@@ -20,10 +20,10 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/spf13/cobra"
 
-	"github.com/GoogleCloudPlatform/gatekeeper-securitycenter/cmd/flag"
-	"github.com/GoogleCloudPlatform/gatekeeper-securitycenter/pkg/logging"
-	"github.com/GoogleCloudPlatform/gatekeeper-securitycenter/pkg/print"
-	"github.com/GoogleCloudPlatform/gatekeeper-securitycenter/pkg/securitycenter"
+	"github.com/googlecloudplatform/gatekeeper-securitycenter/cmd/flag"
+	"github.com/googlecloudplatform/gatekeeper-securitycenter/pkg/logging"
+	"github.com/googlecloudplatform/gatekeeper-securitycenter/pkg/print"
+	"github.com/googlecloudplatform/gatekeeper-securitycenter/pkg/securitycenter"
 )
 
 var (

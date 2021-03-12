@@ -12,25 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-module github.com/GoogleCloudPlatform/gatekeeper-securitycenter
+module github.com/googlecloudplatform/gatekeeper-securitycenter
 
-go 1.15
+go 1.16
 
 require (
-	cloud.google.com/go v0.75.0
-	github.com/go-logr/logr v0.3.0
-	github.com/go-logr/stdr v0.3.0
-	github.com/go-logr/zapr v0.3.0
+	cloud.google.com/go v0.79.0
+	github.com/go-logr/logr v0.4.0
+	github.com/go-logr/stdr v0.4.0
+	github.com/go-logr/zapr v0.4.0
 	github.com/golang/protobuf v1.4.3
-	github.com/google/go-cmp v0.5.4
+	github.com/google/go-cmp v0.5.5
 	github.com/pkg/errors v0.9.1
-	github.com/spf13/cobra v1.1.1
+	github.com/spf13/cobra v1.1.3
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.16.0
-	google.golang.org/api v0.36.0
-	google.golang.org/genproto v0.0.0-20210111234610-22ae2b108f89
-	google.golang.org/grpc v1.34.1
+	google.golang.org/api v0.41.0
+	google.golang.org/genproto v0.0.0-20210310155132-4ce2db91004e
+	google.golang.org/grpc v1.36.0
 	google.golang.org/protobuf v1.25.0
-	k8s.io/apimachinery v0.19.6
-	k8s.io/client-go v0.19.6
+	k8s.io/apimachinery v0.20.4
+	k8s.io/client-go v0.20.4
 )

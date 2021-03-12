@@ -20,13 +20,15 @@ set -euf -o pipefail
 
 if ! [ -x "$(command -v ko)" ]; then
     pushd $(mktemp -d)
-    go mod init tmp; GOFLAGS= go get github.com/google/ko/cmd/ko@v0.7.2
+    curl -L https://github.com/google/ko/archive/v0.8.1.tar.gz | tar --strip-components 1 -zx
+    go build -o $(go env GOPATH)/bin/ko .
     popd
 fi
 
 if ! [ -x "$(command -v crane)" ]; then
     pushd $(mktemp -d)
-    go mod init tmp; GOFLAGS= go get github.com/google/go-containerregistry/cmd/crane@v0.4.0
+    curl -L https://github.com/google/go-containerregistry/archive/v0.4.1.tar.gz | tar --strip-components 1 -zx
+    go build -o $(go env GOPATH)/bin/crane .
     popd
 fi
 

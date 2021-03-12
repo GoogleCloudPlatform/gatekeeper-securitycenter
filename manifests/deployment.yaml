@@ -17,23 +17,30 @@ kind: Deployment
 metadata:
   name: gatekeeper-securitycenter-controller-manager
   namespace: gatekeeper-securitycenter # {"$kpt-set":"namespace"}
+  labels:
+    control-plane: controller-manager
+    gatekeeper-securitycenter/operation: manager
+    gatekeeper-securitycenter/system: 'yes'
 spec:
   replicas: 1
   selector:
     matchLabels:
-      control-plane: gatekeeper-securitycenter-controller-manager
+      control-plane: controller-manager
+      gatekeeper-securitycenter/operation: controller
+      gatekeeper-securitycenter/system: 'yes'
   template:
     metadata:
       labels:
-        control-plane: gatekeeper-securitycenter-controller-manager
+        control-plane: controller-manager
+        gatekeeper-securitycenter/operation: controller
+        gatekeeper-securitycenter/system: 'yes'
       annotations:
-        container.apparmor.security.beta.kubernetes.io/manager: runtime/default
         container.seccomp.security.alpha.kubernetes.io/manager: runtime/default
     spec:
       serviceAccountName: gatekeeper-securitycenter-controller
       containers:
       - name: manager
-        image: gcr.io/cloud-solutions-images/gatekeeper-securitycenter # {"$kpt-set":"image"}
+        image: ko://github.com/googlecloudplatform/gatekeeper-securitycenter # {"$kpt-set":"image"}
         args:
         - findings
         - manager
@@ -55,12 +62,9 @@ spec:
         - name: DEBUG
           value: "false" # {"$kpt-set":"debug-env"}
         resources:
-          limits:
-            cpu: 100m # {"$kpt-set":"limit-cpu"}
-            memory: 128Mi # {"$kpt-set":"limit-memory"}
           requests:
-            cpu: 30m # {"$kpt-set":"request-cpu"}
-            memory: 32Mi # {"$kpt-set":"request-memory"}
+            cpu: 250m # {"$kpt-set":"request-cpu"}
+            memory: 512Mi # {"$kpt-set":"request-memory"}
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:

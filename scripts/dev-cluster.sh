@@ -18,21 +18,22 @@
 # Workload Identity and Gatekeeper.
 #
 # This is intended as an aid in setting up a development environment and to
-# automate steps in the tutorial in <../docs/tutorial.md>. This script is _not_
-# recommended for production use.
+# automate steps in the tutorial. This script is _not_ recommended for
+# production use.
 #
-# This script assumes:
+# This script assumes that:
 #
 # - you have installed the Google Cloud SDK;
 #
 # - `gcloud` is set to use the project and account you want to use to run this
 #   script (verify this with `gcloud config list --format '(core)'`);
 #
-# - you have installed `kubectl` (you can install with
+# - you have installed kubectl (you can install it with
 #   `gcloud components install kubectl --quiet`)
 #
-# To see explanations for the commands used in this script, see the
-# instructions in <docs/tutorial.md>.
+# To read explanations for the commands used in this script, see the
+# instructions in the tutorial:
+# https://cloud.google.com/architecture/reporting-policy-controller-audit-violations-security-command-center
 
 set -euf -o pipefail
 
@@ -45,7 +46,7 @@ NUM_NODES=${NUM_NODES:-3}
 RELEASE_CHANNEL=${RELEASE_CHANNEL:-regular}
 ZONE=${ZONE:-us-central1-f}
 
-GATEKEEPER_VERSION=v3.1.3
+GATEKEEPER_VERSION=v3.3.0
 
 gcloud container clusters create "$CLUSTER" \
     --enable-ip-alias \

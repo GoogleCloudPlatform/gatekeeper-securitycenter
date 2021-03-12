@@ -34,14 +34,6 @@ openAPI:
           name: debug-env
           value: "false"
           setBy: package-default
-    io.k8s.cli.substitutions.dry-run-flag:
-      x-k8s-cli:
-        substitution:
-          name: dry-run-flag
-          pattern: --dry-run=${dry-run}
-          values:
-          - marker: ${dry-run}
-            ref: '#/definitions/io.k8s.cli.setters.dry-run'
     io.k8s.cli.setters.dry-run:
       description: disables write operations
       x-k8s-cli:
@@ -54,36 +46,15 @@ openAPI:
       x-k8s-cli:
         setter:
           name: image
-          value: gcr.io/cloud-solutions-images/gatekeeper-securitycenter
+          value: ko://github.com/googlecloudplatform/gatekeeper-securitycenter
           setBy: package-default
-    io.k8s.cli.substitutions.interval-flag:
-      x-k8s-cli:
-        substitution:
-          name: interval-flag
-          pattern: --interval=${interval}
-          values:
-          - marker: ${interval}
-            ref: '#/definitions/io.k8s.cli.setters.interval'
+          required: true
     io.k8s.cli.setters.interval:
       description: control loop interval in secs
       x-k8s-cli:
         setter:
           name: interval
           value: "120"
-          setBy: package-default
-    io.k8s.cli.setters.limit-cpu:
-      description: CPU limit
-      x-k8s-cli:
-        setter:
-          name: limit-cpu
-          value: 100m
-          setBy: package-default
-    io.k8s.cli.setters.limit-memory:
-      description: memory limit
-      x-k8s-cli:
-        setter:
-          name: limit-memory
-          value: 128Mi
           setBy: package-default
     io.k8s.cli.setters.namespace:
       description: controller namespace
@@ -97,14 +68,14 @@ openAPI:
       x-k8s-cli:
         setter:
           name: request-cpu
-          value: 30m
+          value: 250m
           setBy: package-default
     io.k8s.cli.setters.request-memory:
       description: memory request
       x-k8s-cli:
         setter:
           name: request-memory
-          value: 32Mi
+          value: 512Mi
           setBy: package-default
     io.k8s.cli.setters.source:
       description: Security Command Center source
@@ -114,3 +85,19 @@ openAPI:
           value: organizations/$ORGANIZATION_ID/sources/$SOURCE_ID
           setBy: package-default
           required: true
+    io.k8s.cli.substitutions.dry-run-flag:
+      x-k8s-cli:
+        substitution:
+          name: dry-run-flag
+          pattern: --dry-run=${dry-run}
+          values:
+          - marker: ${dry-run}
+            ref: '#/definitions/io.k8s.cli.setters.dry-run'
+    io.k8s.cli.substitutions.interval-flag:
+      x-k8s-cli:
+        substitution:
+          name: interval-flag
+          pattern: --interval=${interval}
+          values:
+          - marker: ${interval}
+            ref: '#/definitions/io.k8s.cli.setters.interval'

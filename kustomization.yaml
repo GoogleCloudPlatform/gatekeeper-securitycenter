@@ -12,9 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.idea/
-.kpt-hydrated/
-.tmp-sink-dir/
-.vscode/
-gatekeeper-securitycenter
-gatekeeper-securitycenter-v*
+# Skaffold uses this file when deploying with kpt.
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- manifests/cluster-role-binding.yaml
+- manifests/cluster-role.yaml
+- manifests/config-map.yaml
+- manifests/deployment.yaml
+- manifests/namespace.yaml
+- manifests/service-account.yaml

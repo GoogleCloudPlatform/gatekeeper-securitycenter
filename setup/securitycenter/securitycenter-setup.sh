@@ -31,11 +31,9 @@ SOURCE_DESCRIPTION=${SOURCE_DESCRIPTION:-"Reports violations from Gatekeeper aud
 # Download the gatekeeper-securitycenter command-line tool
 
 VERSION=${VERSION:-$(curl -s https://api.github.com/repos/GoogleCloudPlatform/gatekeeper-securitycenter/releases/latest | jq -r '.tag_name')}
-OS=${OS:-$(go env GOOS)}
-ARCH=${ARCH:-$(go env GOARCH)}
 if [[ ! -x "gatekeeper-securitycenter-$VERSION" ]]; then
     >&2 echo Downloading "gatekeeper-securitycenter-$VERSION"
-    curl -sSLo "gatekeeper-securitycenter-$VERSION" "https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter/releases/download/${VERSION}/gatekeeper-securitycenter_${OS}_${ARCH}"
+    curl -sSLo "gatekeeper-securitycenter-$VERSION" "https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter/releases/download/${VERSION}/gatekeeper-securitycenter_$(uname -s)_$(uname -m)"
     chmod +x "gatekeeper-securitycenter-$VERSION"
 fi
 

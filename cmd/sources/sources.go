@@ -17,7 +17,7 @@ package sources
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/GoogleCloudPlatform/gatekeeper-securitycenter/cmd/flag"
+	"github.com/googlecloudplatform/gatekeeper-securitycenter/cmd/flag"
 )
 
 var (

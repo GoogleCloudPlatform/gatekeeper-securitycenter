@@ -50,11 +50,9 @@ K8S_NAMESPACE=${K8S_NAMESPACE:-gatekeeper-securitycenter}
 K8S_SA=${K8S_SA:-gatekeeper-securitycenter-controller}
 
 VERSION=${VERSION:-$(curl -s https://api.github.com/repos/GoogleCloudPlatform/gatekeeper-securitycenter/releases/latest | jq -r '.tag_name')}
-OS=${OS:-$(go env GOOS)}
-ARCH=${ARCH:-$(go env GOARCH)}
 
 if [[ ! -x "gatekeeper-securitycenter-$VERSION" ]]; then
-    curl -sSLo "gatekeeper-securitycenter-$VERSION" "https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter/releases/download/${VERSION}/gatekeeper-securitycenter_${OS}_${ARCH}"
+    curl -sSLo "gatekeeper-securitycenter-$VERSION" "https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter/releases/download/${VERSION}/gatekeeper-securitycenter_$(uname -s)_$(uname -m)"
     chmod +x "gatekeeper-securitycenter-$VERSION"
 fi
 
