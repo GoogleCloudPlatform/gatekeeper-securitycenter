@@ -7,6 +7,14 @@ kpt package for the `gatekeeper-securitycenter` Kubernetes controller.
 This package assumes that you have already created the
 [prerequisite resources](https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter#prerequisites).
 
+### Tools required
+
+1.  Install [kpt](https://googlecontainertools.github.io/kpt/):
+
+    ```bash
+    gcloud components install kpt --quiet
+    ```
+
 ### Fetch this package
 
 ```bash
