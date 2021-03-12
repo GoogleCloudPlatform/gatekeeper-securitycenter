@@ -40,7 +40,7 @@ spec:
       serviceAccountName: gatekeeper-securitycenter-controller
       containers:
       - name: manager
-        image: ko://github.com/googlecloudplatform/gatekeeper-securitycenter # {"$kpt-set":"image"}
+        image: gcr.io/cloud-solutions-images/gatekeeper-securitycenter@sha256:035f725c76bdaa2b25393df1f52d921eb894b758c08c7b280a88412bc1fcf48f # {"$kpt-set":"image"}
         args:
         - findings
         - manager

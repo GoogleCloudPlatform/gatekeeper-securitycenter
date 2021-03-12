@@ -46,9 +46,10 @@ openAPI:
       x-k8s-cli:
         setter:
           name: image
-          value: ko://github.com/googlecloudplatform/gatekeeper-securitycenter
-          setBy: package-default
+          value: gcr.io/cloud-solutions-images/gatekeeper-securitycenter@sha256:035f725c76bdaa2b25393df1f52d921eb894b758c08c7b280a88412bc1fcf48f
+          setBy: cloudbuild
           required: true
+          isSet: true
     io.k8s.cli.setters.interval:
       description: control loop interval in secs
       x-k8s-cli:
