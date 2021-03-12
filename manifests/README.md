@@ -10,7 +10,7 @@ This package assumes that you have already created the
 ### Fetch this package
 
 ```bash
-VERSION=$(curl -s https://api.github.com/repos/GoogleCloudPlatform/gatekeeper-securitycenter/releases/latest | jq -r '.tag_name')
+VERSION=v0.2.0
 
 kpt pkg get https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter.git/manifests@$VERSION manifests
 ```
