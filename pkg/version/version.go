@@ -12,32 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package version prints the version of this tool, as provided at compile time.
+// Package version provides the version of this tool. The variable `Version`
+// can be populated at compile time using `ldflags`.
 package version
 
-import (
-	"fmt"
-	"os"
-
-	"github.com/spf13/cobra"
-
-	"github.com/googlecloudplatform/gatekeeper-securitycenter/pkg/version"
-)
-
 var (
-	writer = os.Stdout
-
-	// Cmd is the version sub-command
-	Cmd = &cobra.Command{
-		Use:   "version",
-		Short: "Print the version information",
-		RunE: func(_ *cobra.Command, _ []string) error {
-			return printVersion()
-		},
-	}
+	// Version is provided by ldflags at compile time
+	Version = "(devel)"
 )
-
-func printVersion() error {
-	_, err := fmt.Fprintln(writer, version.Version)
-	return err
-}
