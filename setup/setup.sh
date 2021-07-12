@@ -17,8 +17,8 @@
 # This scripts orchestrates the creation of the prerequisite resources for the
 # gatekeeper-securitycenter Kubernetes controller.
 #
-# It uses kpt to manage resources manifests and Config Connector to create the
-# Google Cloud resources.
+# It uses kpt (https://kpt.dev) to manage resources manifests and
+# Config Connector to create the Google Cloud resources.
 
 set -ef -o pipefail
 
@@ -32,15 +32,17 @@ fi
 
 # Set values from `setup.env`
 
-kpt cfg set "$DIR" admin-user "$ADMIN_USER" --set-by "$SET_BY"
-kpt cfg set "$DIR" findings-editor-gsa-name "$FINDINGS_EDITOR_SA_NAME" --set-by "$SET_BY"
-kpt cfg set "$DIR" host-project-id "$HOST_PROJECT_ID" --set-by "$SET_BY"
-kpt cfg set "$DIR" kcc-gsa-name "$KCC_SA_NAME" --set-by "$SET_BY"
-kpt cfg set "$DIR" kcc-namespace "$KCC_NS" --set-by "$SET_BY"
-kpt cfg set "$DIR" managed-project-id "$MANAGED_PROJECT_ID" --set-by "$SET_BY"
-kpt cfg set "$DIR" node-network-tags "gke-$CLUSTER-default-pool" --set-by "$SET_BY"
-kpt cfg set "$DIR" organization-id "$ORGANIZATION_ID" --set-by "$SET_BY"
-kpt cfg set "$DIR" sources-admin-gsa-name "$SOURCES_ADMIN_SA_NAME" --set-by "$SET_BY"
+kpt fn eval "$DIR" \
+    --image "gcr.io/kpt-fn/apply-setters:$KPT_FN_APPLY_SETTERS_VERSION" -- \
+    "admin-user=$ADMIN_USER" \
+    "findings-editor-gsa-name=$FINDINGS_EDITOR_SA_NAME" \
+    "host-project-id=$HOST_PROJECT_ID" \
+    "kcc-gsa-name=$KCC_SA_NAME" \
+    "kcc-namespace=$KCC_NS" \
+    "managed-project-id=$MANAGED_PROJECT_ID" \
+    "node-network-tags=gke-$CLUSTER-default-pool" \
+    "organization-id=$ORGANIZATION_ID" \
+    "sources-admin-gsa-name=$SOURCES_ADMIN_SA_NAME"
 
 # Create a GKE cluster and deploy Config Connector.
 

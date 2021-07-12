@@ -20,18 +20,19 @@ Tools required:
 
 -   [Google Cloud SDK](https://cloud.google.com/sdk)
 -   [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
--   [kpt](https://googlecontainertools.github.io/kpt/)
+-   [kpt](https://kpt.dev/installation/) v1.0.0-beta.1 or later
+-   [kustomize](https://kustomize.io/)
 -   [jq](https://stedolan.github.io/jq/)
 
 ### Fetch the package
 
-```bash
+```sh
 kpt pkg get https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter.git/setup setup
 ```
 
 ### Set environment variables
 
-```bash
+```sh
 source setup/setup.env
 ```
 
@@ -41,14 +42,13 @@ your existing resources before you source the file.
 
 ### Create the prerequisite resources
 
-```bash
+```sh
 ./setup/setup.sh
 ```
 
 This script
-[initializes](https://googlecontainertools.github.io/kpt/reference/live/init/)
-and
-[applies](https://googlecontainertools.github.io/kpt/reference/live/apply/)
+[initializes](https://kpt.dev/reference/cli/live/init/) and
+[applies](https://kpt.dev/reference/cli/live/apply/)
 the resource manifests in these directories:
 
 1.  [`config-connector`](config-connector)

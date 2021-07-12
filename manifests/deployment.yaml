@@ -16,7 +16,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gatekeeper-securitycenter-controller-manager
-  namespace: gatekeeper-securitycenter # {"$kpt-set":"namespace"}
+  namespace: gatekeeper-securitycenter # kpt-set: ${namespace}
   labels:
     control-plane: controller-manager
     gatekeeper-securitycenter/operation: manager
@@ -40,14 +40,14 @@ spec:
       serviceAccountName: gatekeeper-securitycenter-controller
       containers:
       - name: manager
-        image: ko://github.com/googlecloudplatform/gatekeeper-securitycenter # {"$kpt-set":"image"}
+        image: ko://github.com/googlecloudplatform/gatekeeper-securitycenter # kpt-set: ${image}
         args:
         - findings
         - manager
         - --source=$(SOURCE)
         - --cluster=$(CLUSTER)
-        - --interval=120 # {"$kpt-set":"interval-flag"}
-        - --dry-run=false # {"$kpt-set":"dry-run-flag"}
+        - --interval=120 # kpt-set: --interval=${interval}
+        - --dry-run=false # kpt-set: --dry-run=${dry-run}
         env:
         - name: SOURCE
           valueFrom:
@@ -60,11 +60,11 @@ spec:
               name: gatekeeper-securitycenter-config
               key: CLUSTER_NAME
         - name: DEBUG
-          value: "false" # {"$kpt-set":"debug-env"}
+          value: "false" # kpt-set: ${debug-env}
         resources:
           requests:
-            cpu: 250m # {"$kpt-set":"request-cpu"}
-            memory: 512Mi # {"$kpt-set":"request-memory"}
+            cpu: 250m # kpt-set: ${request-cpu}
+            memory: 512Mi # kpt-set: ${request-memory}
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:

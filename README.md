@@ -38,8 +38,8 @@ following resources:
 
 To create these prerequisite resources, choose one of these options:
 
-1.  Use the kpt package in the [`setup`](setup) directory. This package
-    creates resources using
+1.  Use the [kpt](https://kpt.dev) package in the [`setup`](setup) directory.
+    This package creates resources using
     [Config Connector](https://cloud.google.com/config-connector/docs/overview).
 
 2.  Use the shell scripts in the [`scripts`](scripts) directory. These scripts
@@ -75,6 +75,8 @@ the steps in the [kpt package documentation](manifests/README.md).
 -   [Building `gatekeeper-securitycenter`](docs/build.md)
 
 -   [Developing `gatekeeper-securitycenter`](docs/development.md)
+
+-   [Releasing `gatekeeper-securitycenter`](docs/release.md)
 
 ## Disclaimer
 

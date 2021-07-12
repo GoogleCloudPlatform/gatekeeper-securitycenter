@@ -7,7 +7,7 @@ container image.
 
 Build the command-line tool for your platform:
 
-```bash
+```sh
 go install github.com/googlecloudplatform/gatekeeper-securitycenter@latest
 ```
 
@@ -15,7 +15,7 @@ go install github.com/googlecloudplatform/gatekeeper-securitycenter@latest
 
 Build and publish a container image for the controller:
 
-```bash
+```sh
 git clone https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter.git
 
 cd gatekeeper-securitycenter

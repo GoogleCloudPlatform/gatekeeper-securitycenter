@@ -12,10 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: v1
-kind: ConfigMap
+# Skaffold uses this file when deploying.
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
 metadata:
-  name: inventory
-  namespace: gatekeeper-securitycenter
+  name: gatekeeper-securitycenter
+  annotations:
+    config.kubernetes.io/local-config: 'true'
   labels:
-    cli-utils.sigs.k8s.io/inventory-id: 4ad3bef4-8811-4db3-be01-53fa19374801
+    gatekeeper-securitycenter/system: 'yes'
+resources:
+- cluster-role-binding.yaml
+- cluster-role.yaml
+- config-map.yaml
+- deployment.yaml
+- namespace.yaml
+- service-account.yaml

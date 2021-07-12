@@ -11,12 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMServiceAccount
 metadata:
-  name: securitycenter-sources-admin # {"$kpt-set":"sources-admin-gsa-name"}
-  namespace: config-connector # {"$kpt-set":"kcc-namespace"}
+  name: securitycenter-sources-admin # kpt-set: ${sources-admin-gsa-name}
+  namespace: config-connector # kpt-set: ${kcc-namespace}
 spec:
   displayName: Security Command Center sources admin
 ---
@@ -24,37 +23,37 @@ apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
 metadata:
   name: securitycenter-sources-admin-role-sources-admin
-  namespace: config-connector # {"$kpt-set":"kcc-namespace"}
+  namespace: config-connector # kpt-set: ${kcc-namespace}
 spec:
-  member: serviceAccount:securitycenter-sources-admin@$managed-project-id.iam.gserviceaccount.com # {"$kpt-set":"sources-admin-gsa-member"}
+  member: serviceAccount:securitycenter-sources-admin@$managed-project-id.iam.gserviceaccount.com # kpt-set: serviceAccount:${sources-admin-gsa-name}@${managed-project-id}.iam.gserviceaccount.com
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Organization
-    external: "" # {"$kpt-set":"organization-id"}
+    external: "" # kpt-set: ${organization-id}
   role: roles/securitycenter.sourcesAdmin
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
 metadata:
   name: securitycenter-sources-admin-role-service-usage-consumer
-  namespace: config-connector # {"$kpt-set":"kcc-namespace"}
+  namespace: config-connector # kpt-set: ${kcc-namespace}
 spec:
-  member: serviceAccount:securitycenter-sources-admin@$managed-project-id.iam.gserviceaccount.com # {"$kpt-set":"sources-admin-gsa-member"}
+  member: serviceAccount:securitycenter-sources-admin@$managed-project-id.iam.gserviceaccount.com # kpt-set: serviceAccount:${sources-admin-gsa-name}@${managed-project-id}.iam.gserviceaccount.com
   resourceRef:
     apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
     kind: Organization
-    external: "" # {"$kpt-set":"organization-id"}
+    external: "" # kpt-set: ${organization-id}
   role: roles/serviceusage.serviceUsageConsumer
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
 metadata:
   name: securitycenter-sources-admin-impersonation
-  namespace: config-connector # {"$kpt-set":"kcc-namespace"}
+  namespace: config-connector # kpt-set: ${kcc-namespace}
 spec:
-  member: user:admin@example.com # {"$kpt-set":"admin-member"}
+  member: user:admin@example.com # kpt-set: user:${admin-user}
   resourceRef:
-    name: securitycenter-sources-admin # {"$kpt-set":"sources-admin-gsa-name"}
+    name: securitycenter-sources-admin # kpt-set: ${sources-admin-gsa-name}
     apiVersion: iam.cnrm.cloud.google.com/v1beta1
     kind: IAMServiceAccount
   role: roles/iam.serviceAccountTokenCreator
@@ -62,8 +61,8 @@ spec:
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMServiceAccount
 metadata:
-  name: gatekeeper-securitycenter # {"$kpt-set":"findings-editor-gsa-name"}
-  namespace: config-connector # {"$kpt-set":"kcc-namespace"}
+  name: gatekeeper-securitycenter # kpt-set: ${findings-editor-gsa-name}
+  namespace: config-connector # kpt-set: ${kcc-namespace}
 spec:
   displayName: Security Command Center Gatekeeper findings editor
 ---
@@ -71,11 +70,11 @@ apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
 metadata:
   name: findings-editor-workload-identity
-  namespace: config-connector # {"$kpt-set":"kcc-namespace"}
+  namespace: config-connector # kpt-set: ${kcc-namespace}
 spec:
-  member: serviceAccount:host-project-id.svc.id.goog[gatekeeper-securitycenter/gatekeeper-securitycenter-controller] # {"$kpt-set":"workload-identity-member"}
+  member: serviceAccount:host-project-id.svc.id.goog[gatekeeper-securitycenter/gatekeeper-securitycenter-controller] # kpt-set: serviceAccount:${host-project-id}.svc.id.goog[${namespace}/gatekeeper-securitycenter-controller]
   resourceRef:
-    name: gatekeeper-securitycenter # {"$kpt-set":"findings-editor-gsa-name"}
+    name: gatekeeper-securitycenter # kpt-set: ${findings-editor-gsa-name}
     apiVersion: iam.cnrm.cloud.google.com/v1beta1
     kind: IAMServiceAccount
   role: roles/iam.workloadIdentityUser

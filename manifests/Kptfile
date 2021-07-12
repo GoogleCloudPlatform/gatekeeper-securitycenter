@@ -12,92 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: kpt.dev/v1alpha1
+apiVersion: kpt.dev/v1
 kind: Kptfile
 metadata:
   name: gatekeeper-securitycenter
-packageMetadata:
-  shortDescription: kpt package for gatekeeper-securitycenter
-openAPI:
-  definitions:
-    io.k8s.cli.setters.cluster:
-      description: cluster identifier
-      x-k8s-cli:
-        setter:
-          name: cluster
-          value: ""
-          setBy: package-default
-    io.k8s.cli.setters.debug-env:
-      description: enable development logging
-      x-k8s-cli:
-        setter:
-          name: debug-env
-          value: "false"
-          setBy: package-default
-    io.k8s.cli.setters.dry-run:
-      description: disables write operations
-      x-k8s-cli:
-        setter:
-          name: dry-run
-          value: "false"
-          setBy: package-default
-    io.k8s.cli.setters.image:
-      description: controller image
-      x-k8s-cli:
-        setter:
-          name: image
-          value: ko://github.com/googlecloudplatform/gatekeeper-securitycenter
-          setBy: package-default
-          required: true
-    io.k8s.cli.setters.interval:
-      description: control loop interval in secs
-      x-k8s-cli:
-        setter:
-          name: interval
-          value: "120"
-          setBy: package-default
-    io.k8s.cli.setters.namespace:
-      description: controller namespace
-      x-k8s-cli:
-        setter:
-          name: namespace
-          value: gatekeeper-securitycenter
-          setBy: package-default
-    io.k8s.cli.setters.request-cpu:
-      description: CPU request
-      x-k8s-cli:
-        setter:
-          name: request-cpu
-          value: 250m
-          setBy: package-default
-    io.k8s.cli.setters.request-memory:
-      description: memory request
-      x-k8s-cli:
-        setter:
-          name: request-memory
-          value: 512Mi
-          setBy: package-default
-    io.k8s.cli.setters.source:
-      description: Security Command Center source
-      x-k8s-cli:
-        setter:
-          name: source
-          value: organizations/$ORGANIZATION_ID/sources/$SOURCE_ID
-          setBy: package-default
-          required: true
-    io.k8s.cli.substitutions.dry-run-flag:
-      x-k8s-cli:
-        substitution:
-          name: dry-run-flag
-          pattern: --dry-run=${dry-run}
-          values:
-          - marker: ${dry-run}
-            ref: '#/definitions/io.k8s.cli.setters.dry-run'
-    io.k8s.cli.substitutions.interval-flag:
-      x-k8s-cli:
-        substitution:
-          name: interval-flag
-          pattern: --interval=${interval}
-          values:
-          - marker: ${interval}
-            ref: '#/definitions/io.k8s.cli.setters.interval'
+  annotations:
+    config.kubernetes.io/local-config: 'true'
+info:
+  description: kpt package for gatekeeper-securitycenter

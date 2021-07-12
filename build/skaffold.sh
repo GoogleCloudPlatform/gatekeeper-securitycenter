@@ -14,25 +14,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Skaffold uses this script to build the container image
+# Skaffold uses this script to build the container image.
 
 set -euf -o pipefail
 
 if ! [ -x "$(command -v ko)" ]; then
     pushd $(mktemp -d)
-    curl -L https://github.com/google/ko/archive/v0.8.1.tar.gz | tar --strip-components 1 -zx
+    curl -L https://github.com/google/ko/archive/v0.8.3.tar.gz | tar --strip-components 1 -zx
     go build -o $(go env GOPATH)/bin/ko .
     popd
 fi
 
 if ! [ -x "$(command -v crane)" ]; then
     pushd $(mktemp -d)
-    curl -L https://github.com/google/go-containerregistry/archive/v0.4.1.tar.gz | tar --strip-components 1 -zx
+    curl -L https://github.com/google/go-containerregistry/archive/v0.5.1.tar.gz | tar --strip-components 1 -zx
     go build -o $(go env GOPATH)/bin/crane .
     popd
 fi
 
 image_tar=$(mktemp)
+
+KO_DOCKER_REPO=${KO_DOCKER_REPO:-$SKAFFOLD_DEFAULT_REPO}
+export KO_DOCKER_REPO
 
 ko publish --tarball $image_tar --push=false .
 

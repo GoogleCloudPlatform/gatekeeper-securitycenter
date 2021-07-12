@@ -41,17 +41,15 @@ CLOUDSDK_CORE_ACCOUNT=${CLOUDSDK_CORE_ACCOUNT:-$(gcloud config list --format 'va
 CLOUDSDK_CORE_PROJECT=${CLOUDSDK_CORE_PROJECT:-$(gcloud config list --format 'value(core.project)')}
 
 CLUSTER=${CLUSTER:-gatekeeper-securitycenter}
-MACHINE_TYPE=${MACHINE_TYPE:-n1-standard-1}
 NUM_NODES=${NUM_NODES:-3}
 RELEASE_CHANNEL=${RELEASE_CHANNEL:-regular}
 ZONE=${ZONE:-us-central1-f}
 
-GATEKEEPER_VERSION=v3.3.0
+GATEKEEPER_VERSION=v3.5.1
 
 gcloud container clusters create "$CLUSTER" \
     --enable-ip-alias \
     --enable-stackdriver-kubernetes \
-    --machine-type "$MACHINE_TYPE" \
     --num-nodes "$NUM_NODES" \
     --release-channel "$RELEASE_CHANNEL" \
     --workload-pool "$CLOUDSDK_CORE_PROJECT.svc.id.goog" \

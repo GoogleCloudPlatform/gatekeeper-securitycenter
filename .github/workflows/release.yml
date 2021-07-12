@@ -16,14 +16,25 @@ name: Release
 
 on:
   push:
-    branches:
-    - 'release-v*'
+    tags:
+    - 'v[0-9]+.[0-9]+.[0-9]+-rc[0-9]+'
+    paths-ignore:
+    - '**.md'
+    - 'docs/**'
 
 jobs:
   release:
     runs-on: ubuntu-latest
+
     env:
       CGO_ENABLED: '0'
+      KO_VERSION: '0.8.3'
+      KPT_VERSION: v1.0.0-beta.1
+      REGISTRY: ghcr.io
+
+    permissions:
+      contents: write
+      packages: write
 
     steps:
     - name: Checkout code
@@ -42,24 +53,54 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-go-
 
-    - name: Set env vars
+    - name: Set image env vars
       run: |
-        MODULE_NAME=$(go list | tr '[:upper:]' '[:lower:]')
-        echo IMAGE_NAME=${MODULE_NAME##*/} >> $GITHUB_ENV
         echo IMAGE_REPO=$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
-        echo VERSION=${GITHUB_REF#refs/heads/release-} >> $GITHUB_ENV
-        echo COMMITISH=$(git rev-parse HEAD) >> $GITHUB_ENV
-
-    - name: Set flags
-      run: |
-        echo GOFLAGS="-v -ldflags=-X=$(go list)/pkg/version.Version=$VERSION" >> $GITHUB_ENV
+        RC_VERSION=${GITHUB_REF#refs/tags/}
+        echo VERSION=${RC_VERSION%-rc*} >> $GITHUB_ENV
 
     - name: Print env
       run: |
         go env
 
-    - name: Unit test
-      run: go test -v -count=1 -short -timeout=5m -vet=asmdecl,assign,atomic,bools,buildtag,cgocall,composites,copylocks,errorsas,httpresponse,loopclosure,lostcancel,nilfunc,printf,shift,stdmethods,structtag,tests,unmarshal,unreachable,unsafeptr,unusedresult ./...
+    - name: Run unit tests
+      run: |
+        go test -v -count=1 -short -timeout=5m -vet=asmdecl,assign,atomic,bools,buildtag,cgocall,composites,copylocks,errorsas,httpresponse,loopclosure,lostcancel,nilfunc,printf,shift,stdmethods,structtag,tests,unmarshal,unreachable,unsafeptr,unusedresult ./...
+
+    - name: Install ko
+      run: |
+        mkdir -p ${HOME}/.local/bin
+        curl -sSL "https://github.com/google/ko/releases/download/v${KO_VERSION}/ko_${KO_VERSION}_Linux_x86_64.tar.gz" | tar -xzC ${HOME}/.local/bin ko
+
+    - name: Install kpt
+      run: |
+        mkdir -p ${HOME}/.local/bin
+        curl -sSLo ${HOME}/.local/bin/kpt "https://github.com/GoogleContainerTools/kpt/releases/download/${KPT_VERSION}/kpt_linux_amd64"
+        chmod +x ${HOME}/.local/bin/kpt
+
+    - name: Create release branch
+      run: |
+        git checkout -B release-$VERSION
+
+    - name: Populate version number in embedded file
+      run: |
+        echo "$VERSION" > pkg/version/version.txt
+
+    - name: Commit and push to release branch with new version number
+      run: |
+        git add pkg/version/version.txt
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git commit -m "Update binary version to $VERSION"
+        git push --force origin release-$VERSION
+
+    - name: Set build env vars
+      run: |
+        echo BUILD_REVISION=$(git rev-parse HEAD) >> $GITHUB_ENV
+
+    - name: Set Go flags
+      run: |
+        echo GOFLAGS="-v -trimpath -ldflags=-s" >> $GITHUB_ENV
 
     - name: Build binaries
       run: |
@@ -71,41 +112,56 @@ jobs:
     - name: Create checksums
       run: shasum -a 256 gatekeeper-securitycenter_* > SHA256SUMS
 
-    - name: Install ko
-      run: |
-        mkdir -p $(go env GOPATH)/bin
-        curl -sSL "https://github.com/google/ko/releases/download/v0.8.1/ko_0.8.1_Linux_x86_64.tar.gz" | tar -xzC $(go env GOPATH)/bin ko
-
     - name: Build and push container image
       run: |
-        $(go env GOPATH)/bin/ko login docker.pkg.github.com -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
-        $(go env GOPATH)/bin/ko publish . --base-import-paths --platform linux/amd64 --tags latest,$VERSION
+        ko login $REGISTRY -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+        echo -n 'IMAGE_NAME_WITH_DIGEST=' >> $GITHUB_ENV
+        ko publish . \
+          --bare \
+          --image-label org.opencontainers.image.licenses="Apache-2.0" \
+          --image-label org.opencontainers.image.revision="$BUILD_REVISION" \
+          --image-label org.opencontainers.image.source="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" \
+          --image-label org.opencontainers.image.title="${GITHUB_REPOSITORY#*/}" \
+          --image-label org.opencontainers.image.vendor="Google LLC" \
+          --image-label org.opencontainers.image.version="$VERSION" \
+          --platform linux/amd64,linux/arm64 \
+          --tags $VERSION \
+          >> $GITHUB_ENV
       env:
-        KO_DOCKER_REPO: docker.pkg.github.com/${{ env.IMAGE_REPO }}
-
-    - name: Install crane
-      run: |
-        mkdir -p $(go env GOPATH)/bin
-        curl -sSL "https://github.com/google/go-containerregistry/releases/download/v0.4.1/go-containerregistry_Linux_x86_64.tar.gz" | tar -xzC $(go env GOPATH)/bin crane
-
-    - name: Get GCR image digest
-      run: |
-        echo -n 'GCR_IMAGE_DIGEST=' >> $GITHUB_ENV
-        $(go env GOPATH)/bin/crane digest gcr.io/cloud-solutions-images/gatekeeper-securitycenter:$VERSION >> $GITHUB_ENV
+        KO_DOCKER_REPO: ${{ env.REGISTRY }}/${{ env.IMAGE_REPO }}
 
     - name: Create release body file
       run: |
         cat << EOF > ${{ runner.temp }}/body.md
         ## Images
 
-        Google Container Registry (multi-platform):
+        GitHub Container Registry:
 
-            gcr.io/cloud-solutions-images/gatekeeper-securitycenter:$VERSION@$GCR_IMAGE_DIGEST
-
-        GitHub Packages (\`linux/amd64\`):
-
-            docker.pkg.github.com/$IMAGE_REPO/$IMAGE_NAME:$VERSION
+            $REGISTRY/$IMAGE_REPO:$VERSION@${IMAGE_NAME_WITH_DIGEST##*@}
         EOF
+
+    - name: Set image name in Kubernetes resource spec
+      run: |
+        kpt fn eval manifests \
+          --image gcr.io/kpt-fn/apply-setters:v0.1@sha256:d2a0219b24a47ebb4bf568d3ccf5bb0e7be2f3f94b28b0c3b1bed011a51d7c35 \
+          -- \
+          "image=$REGISTRY/$IMAGE_REPO:$VERSION@${IMAGE_NAME_WITH_DIGEST##*@}"
+
+    - name: Update version in manifest readme
+      run: |
+        sed -i~ "s/VERSION=.*/VERSION=$VERSION/" manifests/README.md
+
+    - name: Commit and push to release branch with new version and image ref
+      run: |
+        git add manifests
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git commit -m "Update image version in manifest to $VERSION"
+        git push --force origin release-$VERSION
+
+    - name: Set release env vars
+      run: |
+        echo COMMITISH=$(git rev-parse HEAD) >> $GITHUB_ENV
 
     - name: Create release
       id: create_release
@@ -168,7 +224,7 @@ jobs:
         asset_name: SHA256SUMS
         asset_content_type: text/plain
 
-    - name: Update version in readme
+    - name: Update version in manifest readme on main branch
       run: |
         git config user.name github-actions
         git config user.email github-actions@github.com
@@ -178,6 +234,6 @@ jobs:
         git pull --no-edit --no-rebase --strategy-option=theirs origin
         sed -i~ "s/VERSION=.*/VERSION=$VERSION/" manifests/README.md
         git add manifests/README.md
-        git commit -m "Update version in docs to $VERSION"
+        git commit -m "Update version in readme to $VERSION"
         git pull --no-edit --no-rebase --strategy-option=ours origin
         git push origin main

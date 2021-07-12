@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: skaffold/v2beta12
+apiVersion: skaffold/v2beta17
 kind: Config
 metadata:
   name: gatekeeper-securitycenter
@@ -23,20 +23,17 @@ build:
       buildCommand: ./build/skaffold.sh
       dependencies:
         paths:
-        - ".ko.yaml"
-        - "go.mod"
-        - "*.go"
-        - "cmd"
-        - "pkg"
-        - "third_party"
-  local:
-    push: true
+        - .ko.yaml
+        - go.mod
+        - '*.go'
+        - cmd
+        - pkg
+        - third_party
   tagPolicy:
     sha256: {}
+  local:
+    push: true
 deploy:
-  kpt:
-    dir: "."
-    live:
-      apply:
-        inventoryID: 4ad3bef4-8811-4db3-be01-53fa19374801
-        inventoryNamespace: gatekeeper-securitycenter
+  kustomize:
+    paths:
+    - manifests

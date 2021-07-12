@@ -9,15 +9,13 @@ This package assumes that you have already created the
 
 ### Tools required
 
-1.  Install [kpt](https://googlecontainertools.github.io/kpt/):
+-   [kpt](https://kpt.dev/installation/) v1.0.0-beta.1 or later
 
-    ```bash
-    gcloud components install kpt --quiet
-    ```
+-   [kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/)
 
 ### Fetch this package
 
-```bash
+```sh
 VERSION=v0.2.1
 
 kpt pkg get https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter.git/manifests@$VERSION manifests
@@ -27,8 +25,10 @@ kpt pkg get https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter.git
 
 1.  Set the Security Command Center source name:
 
-    ```bash
-    kpt cfg set manifests/ source $SOURCE_NAME
+    ```sh
+    kpt fn eval manifests \
+        --image gcr.io/kpt-fn/apply-setters:v0.1 -- \
+        "source=$SOURCE_NAME"
     ```
 
     Where `$SOURCE_NAME` is your Security Command Center source in the format
@@ -39,8 +39,10 @@ kpt pkg get https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter.git
     Security Command Center. As an example, you can use your current kubectl
     context name:
 
-    ```bash
-    kpt cfg set manifests/ cluster $(kubectl config current-context)
+    ```sh
+    kpt fn eval manifests \
+        --image gcr.io/kpt-fn/apply-setters:v0.1 -- \
+        "cluster=$(kubectl config current-context)"
     ```
 
 ### Add Workload Identity annotation
@@ -50,12 +52,12 @@ If your Google Kubernetes Engine (GKE) cluster uses
 add an annotation for the Google service account `FINDINGS_EDITOR_SA` to bind
 it to the `gatekeeper-securitycenter-controller` Kubernetes service account:
 
-```bash
-kpt cfg annotate manifests/ \
+```sh
+kustomize cfg annotate manifests/ \
     --kind ServiceAccount \
     --name gatekeeper-securitycenter-controller \
     --namespace gatekeeper-securitycenter \
-    --kv iam.gke.io/gcp-service-account=$FINDINGS_EDITOR_SA
+    --kv "iam.gke.io/gcp-service-account=$FINDINGS_EDITOR_SA"
 ```
 
 The Google service account must have the
@@ -67,8 +69,14 @@ If you don't use Workload Identity, see the documentation on
 for alternative instructions on how to provide Google service account
 credentials to the `gatekeeper-securitycenter` controller pods.
 
+### Setup inventory tracking for the package
+
+```sh
+kpt live init manifests
+```
+
 ### Apply the package
 
-```bash
-kpt live apply manifests/ --reconcile-timeout=3m --output=table
+```sh
+kpt live apply manifests --reconcile-timeout=3m --output=table
 ```
