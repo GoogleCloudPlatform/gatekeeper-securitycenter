@@ -53,7 +53,7 @@ add an annotation for the Google service account `FINDINGS_EDITOR_SA` to bind
 it to the `gatekeeper-securitycenter-controller` Kubernetes service account:
 
 ```sh
-kustomize cfg annotate manifests/ \
+kustomize cfg annotate manifests \
     --kind ServiceAccount \
     --name gatekeeper-securitycenter-controller \
     --namespace gatekeeper-securitycenter \

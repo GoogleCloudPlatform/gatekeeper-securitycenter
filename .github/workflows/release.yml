@@ -149,7 +149,7 @@ jobs:
 
     - name: Update version in manifest readme
       run: |
-        sed -i~ "s/VERSION=.*/VERSION=$VERSION/" manifests/README.md
+        sed -i "s/VERSION=.*/VERSION=$VERSION/" manifests/README.md
 
     - name: Commit and push to release branch with new version and image ref
       run: |
@@ -232,7 +232,7 @@ jobs:
         git remote update
         git checkout main
         git pull --no-edit --no-rebase --strategy-option=theirs origin
-        sed -i~ "s/VERSION=.*/VERSION=$VERSION/" manifests/README.md
+        sed -i "s/VERSION=.*/VERSION=$VERSION/" manifests/README.md
         git add manifests/README.md
         git commit -m "Update version in readme to $VERSION"
         git pull --no-edit --no-rebase --strategy-option=ours origin
