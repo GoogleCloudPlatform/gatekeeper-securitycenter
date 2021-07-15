@@ -14,7 +14,7 @@ If you have already set up the prerequisite resources and want to deploy the
 [`manifests`](https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter/tree/main/manifests)
 package instead.
 
-## Usage
+## Deploying the controller
 
 Tools required:
 
