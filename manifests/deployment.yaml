@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -39,38 +38,38 @@ spec:
     spec:
       serviceAccountName: gatekeeper-securitycenter-controller
       containers:
-      - name: manager
-        image: ko://github.com/googlecloudplatform/gatekeeper-securitycenter # kpt-set: ${image}
-        args:
-        - findings
-        - manager
-        - --source=$(SOURCE)
-        - --cluster=$(CLUSTER)
-        - --interval=120 # kpt-set: --interval=${interval}
-        - --dry-run=false # kpt-set: --dry-run=${dry-run}
-        env:
-        - name: SOURCE
-          valueFrom:
-            configMapKeyRef:
-              name: gatekeeper-securitycenter-config
-              key: SOURCE_NAME
-        - name: CLUSTER
-          valueFrom:
-            configMapKeyRef:
-              name: gatekeeper-securitycenter-config
-              key: CLUSTER_NAME
-        - name: DEBUG
-          value: "false" # kpt-set: ${debug-env}
-        resources:
-          requests:
-            cpu: 250m # kpt-set: ${request-cpu}
-            memory: 512Mi # kpt-set: ${request-memory}
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-            - all
-          readOnlyRootFilesystem: true
-          runAsGroup: 65532
-          runAsNonRoot: true
-          runAsUser: 65532
+        - name: manager
+          image: ghcr.io/googlecloudplatform/gatekeeper-securitycenter:v0.2.4@sha256:e6498c4337a0e3af05b7b6d84f1664474853e24398b580f1274c9a2efe9332af # kpt-set: ${image}
+          args:
+            - findings
+            - manager
+            - --source=$(SOURCE)
+            - --cluster=$(CLUSTER)
+            - --interval=120 # kpt-set: --interval=${interval}
+            - --dry-run=false # kpt-set: --dry-run=${dry-run}
+          env:
+            - name: SOURCE
+              valueFrom:
+                configMapKeyRef:
+                  name: gatekeeper-securitycenter-config
+                  key: SOURCE_NAME
+            - name: CLUSTER
+              valueFrom:
+                configMapKeyRef:
+                  name: gatekeeper-securitycenter-config
+                  key: CLUSTER_NAME
+            - name: DEBUG
+              value: "false" # kpt-set: ${debug-env}
+          resources:
+            requests:
+              cpu: 250m # kpt-set: ${request-cpu}
+              memory: 512Mi # kpt-set: ${request-memory}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - all
+            readOnlyRootFilesystem: true
+            runAsGroup: 65532
+            runAsNonRoot: true
+            runAsUser: 65532
