@@ -16,7 +16,7 @@ This package assumes that you have already created the
 ### Fetch this package
 
 ```sh
-VERSION=v0.2.4
+VERSION=v0.2.5
 kpt pkg get https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter.git/manifests@$VERSION manifests
 ```
 
