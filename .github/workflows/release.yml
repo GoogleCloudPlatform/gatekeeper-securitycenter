@@ -28,8 +28,8 @@ jobs:
 
     env:
       CGO_ENABLED: '0'
-      KO_VERSION: '0.8.3'
-      KPT_VERSION: v1.0.0-beta.1
+      KO_VERSION: '0.9.3'
+      KPT_VERSION: v1.0.0-beta.7
       REGISTRY: ghcr.io
 
     permissions:
@@ -118,6 +118,7 @@ jobs:
         echo -n 'IMAGE_NAME_WITH_DIGEST=' >> $GITHUB_ENV
         ko publish . \
           --bare \
+          --image-label org.opencontainers.image.description="Report Anthos Config Management Policy Controller and Open Policy Agent Gatekeeper audit violations in Security Command Center." \
           --image-label org.opencontainers.image.licenses="Apache-2.0" \
           --image-label org.opencontainers.image.revision="$BUILD_REVISION" \
           --image-label org.opencontainers.image.source="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" \
@@ -143,7 +144,7 @@ jobs:
     - name: Set image name in Kubernetes resource spec
       run: |
         kpt fn eval manifests \
-          --image gcr.io/kpt-fn/apply-setters:v0.1@sha256:d2a0219b24a47ebb4bf568d3ccf5bb0e7be2f3f94b28b0c3b1bed011a51d7c35 \
+          --image gcr.io/kpt-fn/apply-setters:v0.2@sha256:4d4295727183396f0c3c6a75d2560254c2f9041a39e95dc1e5beffeb49cc1a12 \
           -- \
           "image=$REGISTRY/$IMAGE_REPO:$VERSION@${IMAGE_NAME_WITH_DIGEST##*@}"
 

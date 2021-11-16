@@ -1,10 +1,10 @@
-# `gatekeeper-securitycenter` controller kpt package
+# `gatekeeper-securitycenter` controller manifests
 
-kpt package for the `gatekeeper-securitycenter` Kubernetes controller.
+Manifests for the `gatekeeper-securitycenter` Kubernetes controller.
 
 ## Usage
 
-This package assumes that you have already created the
+These instructions assume that you have already created the
 [prerequisite resources](https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter#prerequisites).
 
 ### Tools required
@@ -13,7 +13,7 @@ This package assumes that you have already created the
 
 -   [kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/)
 
-### Fetch this package
+### Fetch the manifests
 
 ```sh
 VERSION=v0.2.5
@@ -26,7 +26,7 @@ kpt pkg get https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter.git
 
     ```sh
     kpt fn eval manifests \
-        --image gcr.io/kpt-fn/apply-setters:v0.1 -- \
+        --image gcr.io/kpt-fn/apply-setters:v0.2 -- \
         "source=$SOURCE_NAME"
     ```
 
@@ -40,7 +40,7 @@ kpt pkg get https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter.git
 
     ```sh
     kpt fn eval manifests \
-        --image gcr.io/kpt-fn/apply-setters:v0.1 -- \
+        --image gcr.io/kpt-fn/apply-setters:v0.2 -- \
         "cluster=$(kubectl config current-context)"
     ```
 
@@ -68,14 +68,14 @@ If you don't use Workload Identity, see the documentation on
 for alternative instructions on how to provide Google service account
 credentials to the `gatekeeper-securitycenter` controller pods.
 
-### Setup inventory tracking for the package
+### Setup inventory tracking
 
 ```sh
 kpt live init manifests
 ```
 
-### Apply the package
+### Apply the manifests
 
 ```sh
-kpt live apply manifests --reconcile-timeout=3m --output=table
+kpt live apply manifests --reconcile-timeout=3m
 ```

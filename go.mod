@@ -17,20 +17,20 @@ module github.com/googlecloudplatform/gatekeeper-securitycenter
 go 1.16
 
 require (
-	cloud.google.com/go v0.79.0
+	cloud.google.com/go/securitycenter v1.1.0
 	github.com/go-logr/logr v0.4.0
 	github.com/go-logr/stdr v0.4.0
 	github.com/go-logr/zapr v0.4.0
-	github.com/golang/protobuf v1.4.3
-	github.com/google/go-cmp v0.5.5
+	github.com/golang/protobuf v1.5.2
+	github.com/google/go-cmp v0.5.6
 	github.com/pkg/errors v0.9.1
-	github.com/spf13/cobra v1.1.3
+	github.com/spf13/cobra v1.2.1
 	github.com/spf13/pflag v1.0.5
-	go.uber.org/zap v1.16.0
-	google.golang.org/api v0.41.0
-	google.golang.org/genproto v0.0.0-20210310155132-4ce2db91004e
-	google.golang.org/grpc v1.36.0
-	google.golang.org/protobuf v1.25.0
-	k8s.io/apimachinery v0.20.4
-	k8s.io/client-go v0.20.4
+	go.uber.org/zap v1.19.1
+	google.golang.org/api v0.60.0
+	google.golang.org/genproto v0.0.0-20211115160612-a5da7257a6f7
+	google.golang.org/grpc v1.42.0
+	google.golang.org/protobuf v1.27.1
+	k8s.io/apimachinery v0.22.3
+	k8s.io/client-go v0.22.3
 )
