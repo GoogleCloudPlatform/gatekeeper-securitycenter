@@ -47,6 +47,7 @@ steps:
     export GOFLAGS="-v -trimpath -ldflags=-s"
     /workspace/.gopath/bin/ko publish \
       --base-import-paths \
+      --image-label org.opencontainers.image.description="Report Anthos Config Management Policy Controller and Open Policy Agent Gatekeeper audit violations in Security Command Center." \
       --image-label org.opencontainers.image.licenses="Apache-2.0" \
       --image-label org.opencontainers.image.revision="${COMMIT_SHA}" \
       --image-label org.opencontainers.image.source="https://github.com/GoogleCloudPlatform/${REPO_NAME}" \
@@ -65,4 +66,4 @@ substitutions:
   _IMAGE_REPO: gcr.io/$PROJECT_ID
   _KO_VERSION: '0.9.3'
 
-timeout: 900s
+timeout: 1800s

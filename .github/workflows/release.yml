@@ -144,7 +144,7 @@ jobs:
     - name: Set image name in Kubernetes resource spec
       run: |
         kpt fn eval manifests \
-          --image gcr.io/kpt-fn/apply-setters:v0.2@sha256:4d4295727183396f0c3c6a75d2560254c2f9041a39e95dc1e5beffeb49cc1a12 \
+          --image gcr.io/kpt-fn/apply-setters:v0.2 \
           -- \
           "image=$REGISTRY/$IMAGE_REPO:$VERSION@${IMAGE_NAME_WITH_DIGEST##*@}"
 

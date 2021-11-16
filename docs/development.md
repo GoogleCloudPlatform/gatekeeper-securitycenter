@@ -29,7 +29,7 @@
 4.  Set the name of your Security Command Center source:
 
     ```sh
-    kpt fn eval manifests --image gcr.io/kpt-fn/apply-setters:v0.1 -- "source=$SOURCE_NAME"
+    kpt fn eval manifests --image gcr.io/kpt-fn/apply-setters:v0.2 -- "source=$SOURCE_NAME"
     ```
 
 5.  If you use a GKE cluster with Workload Identity, add the Workload Identity
