@@ -57,6 +57,6 @@ steps:
 
 substitutions:
   _IMAGE_REPO: gcr.io/$PROJECT_ID
-  _KO_VERSION: '0.8.3'
+  _KO_VERSION: '0.9.3'
 
 timeout: 1800s

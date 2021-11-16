@@ -66,7 +66,7 @@ domain you own. Cloud Identity offers a
 ## Installing the `gatekeeper-securitycenter` controller
 
 Install the `gatekeeper-securitycenter` controller in your cluster by following
-the steps in the [kpt package documentation](manifests/README.md).
+the [documentation in the manifest directory](manifests/README.md).
 
 ## Documentation
 
