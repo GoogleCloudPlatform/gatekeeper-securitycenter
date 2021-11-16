@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -40,7 +39,7 @@ spec:
       serviceAccountName: gatekeeper-securitycenter-controller
       containers:
       - name: manager
-        image: ko://github.com/googlecloudplatform/gatekeeper-securitycenter # kpt-set: ${image}
+        image: ghcr.io/googlecloudplatform/gatekeeper-securitycenter:v0.2.6@sha256:e71b85c0dae471ab5f2466242f1c7af03138ad597e41d44208db31ead86ba100 # kpt-set: ${image}
         args:
         - findings
         - manager
