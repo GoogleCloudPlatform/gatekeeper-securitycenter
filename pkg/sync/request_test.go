@@ -15,11 +15,10 @@
 package sync
 
 import (
+	"github.com/go-logr/logr/testr"
 	"testing"
 	"time"
 
-	logrtesting "github.com/go-logr/logr/testing"
-	"github.com/golang/protobuf/ptypes"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	securitycenterpb "google.golang.org/genproto/googleapis/cloud/securitycenter/v1"
@@ -28,17 +27,13 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-var (
+const (
 	host    = "https://apiserver:443"
 	source  = "organizations/123/sources/456"
 	cluster = "my-cluster"
-	client  = &Client{
-		log:     logrtesting.NullLogger{},
-		host:    host,
-		source:  source,
-		cluster: cluster,
-	}
+)
 
+var (
 	// ignoreUnexported compares two CreateFindingRequest objects on all exported fields
 	ignoreUnexported = cmpopts.IgnoreUnexported(
 		securitycenterpb.CreateFindingRequest{},
@@ -58,7 +53,7 @@ var (
 
 func TestClient_createFindingRequest(t *testing.T) {
 	now := time.Now()
-	nowpb, _ := ptypes.TimestampProto(now)
+	nowpb := timestamppb.New(now)
 
 	tests := []struct {
 		name       string
@@ -149,6 +144,12 @@ func TestClient_createFindingRequest(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			client := &Client{
+				log:     testr.New(t),
+				host:    host,
+				source:  source,
+				cluster: cluster,
+			}
 			got := client.createFindingRequest(tt.constraint, tt.resource)
 			if diff := cmp.Diff(tt.want, got, tt.cmpOptions...); diff != "" {
 				t.Errorf("createFindingRequest() (%s) mismatch (-want +got):\n%s", tt.name, diff)

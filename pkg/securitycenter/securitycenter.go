@@ -22,8 +22,6 @@ import (
 	securitycenterv1 "cloud.google.com/go/securitycenter/apiv1"
 	"github.com/go-logr/logr"
 	"google.golang.org/api/option"
-
-	"github.com/googlecloudplatform/gatekeeper-securitycenter/pkg/logging"
 )
 
 const (
@@ -55,9 +53,6 @@ func (c *Client) Close() error {
 // - a Google Service Account to impersonate. Defaults to no impersonation for empty string.
 // - ClientOptions from the google.golang.org/api/option package
 func NewClient(ctx context.Context, log logr.Logger, googleServiceAccount string, dryRun bool, opts ...option.ClientOption) (*Client, error) {
-	if log == nil {
-		log = logging.CreateStdLog("securitycenter")
-	}
 	if dryRun {
 		log.Info("enabling dry-run mode")
 	}
