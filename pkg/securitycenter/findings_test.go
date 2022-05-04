@@ -16,26 +16,13 @@ package securitycenter
 
 import (
 	"context"
-	"os"
-	"strings"
+	"github.com/go-logr/logr/testr"
 	"testing"
 
-	"github.com/go-logr/logr"
-	logrtesting "github.com/go-logr/logr/testing"
 	securitycenterpb "google.golang.org/genproto/googleapis/cloud/securitycenter/v1"
-
-	"github.com/googlecloudplatform/gatekeeper-securitycenter/pkg/logging"
 )
 
 const source = "organizations/123/sources/456"
-
-var logger logr.Logger = logrtesting.NullLogger{}
-
-func init() {
-	if strings.ToLower(os.Getenv("DEBUG")) == "true" {
-		logger = logging.CreateStdLog("test")
-	}
-}
 
 func findingIDToName(id string) string {
 	return source + "/findings/" + id
@@ -43,7 +30,8 @@ func findingIDToName(id string) string {
 
 func Test_SyncFindings(t *testing.T) {
 	ctx := context.Background()
-	client, err := NewClient(ctx, logger, "", false, clientOptionsForMockServer)
+	log := testr.New(t)
+	client, err := NewClient(ctx, log, "", false, clientOptionsForMockServer)
 	if err != nil {
 		t.Fatal(err)
 	}
