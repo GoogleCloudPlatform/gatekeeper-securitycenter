@@ -3,14 +3,14 @@ data:
   cluster: ""
   debug-env: "false"
   dry-run: "false"
-  image: ghcr.io/googlecloudplatform/gatekeeper-securitycenter
+  image: ghcr.io/googlecloudplatform/gatekeeper-securitycenter:v0.3.0@sha256:411303cc202d1fb28a486ddea3f35f6d34c97943aa1de0d1d69a8d2afc4cbee3
   interval: "120"
   namespace: gatekeeper-securitycenter
   request-cpu: 250m
   request-memory: 512Mi
-  source: "" # required
+  source: ""
 kind: ConfigMap
 metadata:
   annotations:
-    config.kubernetes.io/local-config: 'true'
+    config.kubernetes.io/local-config: "true"
   name: setters
