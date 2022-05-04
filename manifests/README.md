@@ -9,9 +9,7 @@ These instructions assume that you have already created the
 
 ### Tools required
 
--   [kpt](https://kpt.dev/installation/) v1.0.0-beta.1 or later
-
--   [kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/)
+-   [kpt](https://kpt.dev/installation/) v1.0.0-beta.7 or later
 
 ### Fetch the manifests
 
@@ -52,18 +50,19 @@ add an annotation for the Google service account `FINDINGS_EDITOR_SA` to bind
 it to the `gatekeeper-securitycenter-controller` Kubernetes service account:
 
 ```sh
-kustomize cfg annotate manifests \
-    --kind ServiceAccount \
-    --name gatekeeper-securitycenter-controller \
-    --namespace gatekeeper-securitycenter \
-    --kv "iam.gke.io/gcp-service-account=$FINDINGS_EDITOR_SA"
+kpt fn eval \
+    --image gcr.io/kpt-fn/set-annotations:v0.1.4 \
+    --match-kind ServiceAccount \
+    --match-name gatekeeper-securitycenter-controller \
+    --match-namespace gatekeeper-securitycenter -- \
+    "iam.gke.io/gcp-service-account=$FINDINGS_EDITOR_SA"
 ```
 
 The Google service account must have the
 [Security Center Findings Editor](https://cloud.google.com/iam/docs/understanding-roles#security-center-roles)
 Cloud IAM role on the source or at the organization level.
 
-If you don't use Workload Identity, see the documentation on
+If you don't use GKE Workload Identity, see the documentation on
 [Authenticating to Google Cloud with service accounts](https://cloud.google.com/kubernetes-engine/docs/tutorials/authenticating-to-cloud-platform)
 for alternative instructions on how to provide Google service account
 credentials to the `gatekeeper-securitycenter` controller pods.

@@ -1,11 +1,11 @@
 # Developing `gatekeeper-securitycenter`
 
-1.  Install these tools:
+1.  Install these command-line tools:
 
-    -   [kpt](https://kpt.dev/installation/) v1.0.0-beta.1 or later,
-    -   [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/),
-    -   [kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/), and
-    -   [Skaffold](https://skaffold.dev/) v1.26.1 or later.
+    - [`gcloud`](https://cloud.google.com/sdk/docs/install),
+    - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/),
+    - [kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/) v3.7.0 or later, and
+    - [Skaffold](https://skaffold.dev/) v1.37.2 or later.
 
 2.  Create a development GKE cluster with Workload Identity, and install
     Policy Controller or Gatekeeper. If you like, you can use the provided
@@ -29,7 +29,9 @@
 4.  Set the name of your Security Command Center source:
 
     ```sh
-    kpt fn eval manifests --image gcr.io/kpt-fn/apply-setters:v0.2 -- "source=$SOURCE_NAME"
+    kustomize fn run manifests \
+        --image gcr.io/kpt-fn/apply-setters:v0.2 -- \
+        "source=$SOURCE_NAME" 
     ```
 
 5.  If you use a GKE cluster with Workload Identity, add the Workload Identity

@@ -17,23 +17,31 @@ name: Release
 on:
   push:
     tags:
-    - 'v[0-9]+.[0-9]+.[0-9]+-rc[0-9]+'
+    - "v[0-9]+.[0-9]+.[0-9]+-rc[0-9]+"
     paths-ignore:
-    - '**.md'
-    - 'docs/**'
+    - "**.md"
+    - "docs/**"
 
 jobs:
   release:
     runs-on: ubuntu-latest
 
     env:
-      CGO_ENABLED: '0'
-      KO_VERSION: '0.9.3'
-      KPT_VERSION: v1.0.0-beta.7
+      CGO_ENABLED: "0"
+      COSIGN_VERSION: v1.7.2
+      GGCR_VERSION: v0.8.0
+      KPT_VERSION: 1.0.0-beta.14
       REGISTRY: ghcr.io
+      SKAFFOLD_VERSION: v1.38.0
+      SKAFFOLD_CACHE_ARTIFACTS: "false"
+      SKAFFOLD_DETECT_MINIKUBE: "false"
+      SKAFFOLD_INTERACTIVE: "false"
+      SKAFFOLD_OFFLINE: "true"
+      SKAFFOLD_UPDATE_CHECK: "false"
 
     permissions:
       contents: write
+      id-token: write
       packages: write
 
     steps:
@@ -61,22 +69,14 @@ jobs:
 
     - name: Print env
       run: |
+        echo HOME=$HOME
+        echo PATH=$PATH
+        go version
         go env
 
     - name: Run unit tests
       run: |
         go test -v -count=1 -short -timeout=5m -vet=asmdecl,assign,atomic,bools,buildtag,cgocall,composites,copylocks,errorsas,httpresponse,loopclosure,lostcancel,nilfunc,printf,shift,stdmethods,structtag,tests,unmarshal,unreachable,unsafeptr,unusedresult ./...
-
-    - name: Install ko
-      run: |
-        mkdir -p ${HOME}/.local/bin
-        curl -sSL "https://github.com/google/ko/releases/download/v${KO_VERSION}/ko_${KO_VERSION}_Linux_x86_64.tar.gz" | tar -xzC ${HOME}/.local/bin ko
-
-    - name: Install kpt
-      run: |
-        mkdir -p ${HOME}/.local/bin
-        curl -sSLo ${HOME}/.local/bin/kpt "https://github.com/GoogleContainerTools/kpt/releases/download/${KPT_VERSION}/kpt_linux_amd64"
-        chmod +x ${HOME}/.local/bin/kpt
 
     - name: Create release branch
       run: |
@@ -94,42 +94,64 @@ jobs:
         git commit -m "Update binary version to $VERSION"
         git push --force origin release-$VERSION
 
-    - name: Set build env vars
+    - name: Set image label env vars
       run: |
-        echo BUILD_REVISION=$(git rev-parse HEAD) >> $GITHUB_ENV
-
-    - name: Set Go flags
-      run: |
-        echo GOFLAGS="-v -trimpath -ldflags=-s" >> $GITHUB_ENV
+        echo REVISION=$(git rev-parse HEAD) >> $GITHUB_ENV
+        echo SOURCE=${{ github.server_url }}/${{ github.repository }}.git >> $GITHUB_ENV
+        echo URL=${{ github.server_url }}/${{ github.repository }} >> $GITHUB_ENV
 
     - name: Build binaries
       run: |
-        GOOS=darwin GOARCH=amd64 go build -o gatekeeper-securitycenter_Darwin_x86_64 .
-        GOOS=darwin GOARCH=arm64 go build -o gatekeeper-securitycenter_Darwin_arm64 .
-        GOOS=linux GOARCH=amd64 go build -o gatekeeper-securitycenter_Linux_x86_64 .
-        GOOS=linux GOARCH=arm64 go build -o gatekeeper-securitycenter_Linux_aarch64 .
+        GOOS=darwin GOARCH=amd64 go build -v -trimpath -ldflags="-s -w" -o gatekeeper-securitycenter_Darwin_x86_64 .
+        GOOS=darwin GOARCH=arm64 go build -v -trimpath -ldflags="-s -w" -o gatekeeper-securitycenter_Darwin_arm64 .
+        GOOS=linux  GOARCH=amd64 go build -v -trimpath -ldflags="-s -w" -o gatekeeper-securitycenter_Linux_x86_64 .
+        GOOS=linux  GOARCH=arm64 go build -v -trimpath -ldflags="-s -w" -o gatekeeper-securitycenter_Linux_aarch64 .
 
-    - name: Create checksums
+    - name: Install Skaffold
+      run: |
+        mkdir -p $HOME/.local/bin
+        curl -sSLo $HOME/.local/bin/skaffold "https://storage.googleapis.com/skaffold/releases/${SKAFFOLD_VERSION}/skaffold-$(go env GOOS)-$(go env GOARCH)"
+        chmod +x $HOME/.local/bin/skaffold
+
+    - name: Build and push container images
+      run: |
+        skaffold build \
+          --default-repo ${{ env.REGISTRY }}/${{ github.repository_owner }} \
+          --file-output ${{ runner.temp }}/skaffold-artifacts.json \
+          --profile release \
+          --push \
+          --tag $VERSION
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Create checksums file
       run: shasum -a 256 gatekeeper-securitycenter_* > SHA256SUMS
 
-    - name: Build and push container image
+    - name: Get image name with digest
       run: |
-        ko login $REGISTRY -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
-        echo -n 'IMAGE_NAME_WITH_DIGEST=' >> $GITHUB_ENV
-        ko publish . \
-          --bare \
-          --image-label org.opencontainers.image.description="Report Anthos Config Management Policy Controller and Open Policy Agent Gatekeeper audit violations in Security Command Center." \
-          --image-label org.opencontainers.image.licenses="Apache-2.0" \
-          --image-label org.opencontainers.image.revision="$BUILD_REVISION" \
-          --image-label org.opencontainers.image.source="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" \
-          --image-label org.opencontainers.image.title="${GITHUB_REPOSITORY#*/}" \
-          --image-label org.opencontainers.image.vendor="Google LLC" \
-          --image-label org.opencontainers.image.version="$VERSION" \
-          --platform linux/amd64,linux/arm64 \
-          --tags $VERSION \
-          >> $GITHUB_ENV
+        echo -n IMAGE_NAME= >> $GITHUB_ENV
+        echo $(jq -r '.builds[] | select(.imageName=="gatekeeper-securitycenter") | .tag' ${{ runner.temp }}/skaffold-artifacts.json) >> $GITHUB_ENV
+
+    - name: Install crane
+      run: |
+        mkdir -p $HOME/.local/bin
+        curl -sSL "https://github.com/google/go-containerregistry/releases/download/${GGCR_VERSION}/go-containerregistry_$(uname -s)_$(uname -m).tar.gz" | tar -xzC $HOME/.local/bin crane
+
+    - name: Authenticate to container image registry
+      run: crane auth login ${{ env.REGISTRY }} -u ${{ github.actor }} -p ${{ github.token }}
+
+    - name: Update latest tag
+      run: crane tag $IMAGE_NAME latest
+
+    - name: Install Cosign
+      uses: sigstore/cosign-installer@main
+      with:
+        cosign-release: ${{ env.COSIGN_VERSION }}
+
+    - name: Sign the images with GitHub OIDC Token
+      run: cosign sign --force --recursive --upload $IMAGE_NAME
       env:
-        KO_DOCKER_REPO: ${{ env.REGISTRY }}/${{ env.IMAGE_REPO }}
+        COSIGN_EXPERIMENTAL: 1
 
     - name: Create release body file
       run: |
@@ -138,23 +160,41 @@ jobs:
 
         GitHub Container Registry:
 
-            $REGISTRY/$IMAGE_REPO:$VERSION@${IMAGE_NAME_WITH_DIGEST##*@}
+            $IMAGE_NAME
         EOF
 
-    - name: Set image name in Kubernetes resource spec
+    - name: Install kpt
+      run: |
+        mkdir -p $HOME/.local/bin
+        curl -sSL "https://github.com/GoogleContainerTools/kpt/releases/download/v${KPT_VERSION}/kpt_$(go env GOOS)_$(go env GOARCH)-${KPT_VERSION}.tar.gz" | tar -xzC $HOME/.local/bin kpt
+
+    - name: Set image name in deployment manifest
       run: |
         kpt fn eval manifests \
           --image gcr.io/kpt-fn/apply-setters:v0.2 \
           -- \
-          "image=$REGISTRY/$IMAGE_REPO:$VERSION@${IMAGE_NAME_WITH_DIGEST##*@}"
+          "image=$IMAGE_NAME"
 
-    - name: Update version in manifest readme
+    - name: Update setter values file
       run: |
-        sed -i "s/VERSION=.*/VERSION=$VERSION/" manifests/README.md
+        tmpfile=$(mktemp)
+        kubectl patch \
+          --dry-run \
+          --filename setters.yaml \
+          --local \
+          --output yaml \
+          --patch '{"data":{"image":"${{ env.IMAGE_NAME }}"}}' \
+          > $tmpfile
+        mv $tmpfile setters.yaml
+      working-directory: manifests
+
+    - name: Update version in readme
+      run: |
+        sed -i "s/VERSION=.*/VERSION=$VERSION/" README.md manifests/README.md
 
     - name: Commit and push to release branch with new version and image ref
       run: |
-        git add manifests
+        git add README.md manifests
         git config user.name github-actions
         git config user.email github-actions@github.com
         git commit -m "Update image version in manifest to $VERSION"
@@ -215,7 +255,7 @@ jobs:
         asset_name: gatekeeper-securitycenter_Linux_aarch64
         asset_content_type: application/octet-stream
 
-    - name: Upload checksum file
+    - name: Upload checksums file
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -225,7 +265,7 @@ jobs:
         asset_name: SHA256SUMS
         asset_content_type: text/plain
 
-    - name: Update version in manifest readme on main branch
+    - name: Update version in readme on main branch
       run: |
         git config user.name github-actions
         git config user.email github-actions@github.com
@@ -233,8 +273,8 @@ jobs:
         git remote update
         git checkout main
         git pull --no-edit --no-rebase --strategy-option=theirs origin
-        sed -i "s/VERSION=.*/VERSION=$VERSION/" manifests/README.md
-        git add manifests/README.md
+        sed -i "s/VERSION=.*/VERSION=$VERSION/" README.md manifests/README.md
+        git add README.md manifests/README.md
         git commit -m "Update version in readme to $VERSION"
         git pull --no-edit --no-rebase --strategy-option=ours origin
         git push origin main
