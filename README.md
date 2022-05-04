@@ -21,12 +21,14 @@ dashboard for Kubernetes resource policy violations.
 
 ![Architecture](docs/architecture.svg)
 
-`gatekeeper-securitycenter` requires
-[Security Command Center Standard tier](https://cloud.google.com/security-command-center/pricing#standard_tier_pricing).
+`gatekeeper-securitycenter` works with both
+[Security Command Center Standard tier](https://cloud.google.com/security-command-center/pricing#standard_tier_pricing)
+and
+[Security Command Center Premium tier](https://cloud.google.com/security-command-center/pricing#premium_tier_pricing).
 
 ## Prerequisites
 
-Before installing the `gatekeeper-securitycenter` controller, create all of the
+Before installing the `gatekeeper-securitycenter` controller, create all the
 following resources:
 
 -   a Kubernetes cluster, for instance a Google Kubernetes Engine (GKE) cluster
@@ -49,8 +51,8 @@ To create these prerequisite resources, choose one of these options:
 3.  Follow the step-by-step instructions in the accompanying
     [tutorial](https://cloud.google.com/architecture/reporting-policy-controller-audit-violations-security-command-center).
 
-For all options, you must have an appropriate Cloud IAM role for Security
-Command Center at the organization level, such as
+If you use Security Command Center Standard tier, you must have an appropriate
+Cloud IAM role for Security Command Center at the organization level, such as
 [Security Center Admin Editor](https://cloud.google.com/security-command-center/docs/access-control).
 Your organization administrator can
 [grant you this role](https://cloud.google.com/resource-manager/docs/access-control-org).
@@ -62,6 +64,16 @@ either [Cloud Identity](https://cloud.google.com/identity) or
 [Google Workspace](https://workspace.google.com/) (formerly G Suite) using a
 domain you own. Cloud Identity offers a
 [free edition](https://gsuite.google.com/signup/gcpidentity/welcome).
+
+## Downloading the `gatekeeper-securitycenter` command-line tool
+
+Download the binary for your platform:
+
+```sh
+VERSION=v0.2.6
+curl -Lo gatekeeper-securitycenter "https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter/releases/download/${VERSION}/gatekeeper-securitycenter_$(uname -s)_$(uname -m)"
+chmod +x gatekeeper-securitycenter
+```
 
 ## Installing the `gatekeeper-securitycenter` controller
 
