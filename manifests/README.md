@@ -50,7 +50,7 @@ add an annotation for the Google service account `FINDINGS_EDITOR_SA` to bind
 it to the `gatekeeper-securitycenter-controller` Kubernetes service account:
 
 ```sh
-kpt fn eval \
+kpt fn eval manifests \
     --image gcr.io/kpt-fn/set-annotations:v0.1.4 \
     --match-kind ServiceAccount \
     --match-name gatekeeper-securitycenter-controller \
