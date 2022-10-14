@@ -20,9 +20,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golang/protobuf/ptypes"
 	"google.golang.org/genproto/googleapis/cloud/securitycenter/v1"
 	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -75,14 +75,10 @@ func (c *Client) createFindingRequest(constraint *Constraint, resource *Resource
 	if resourceName == "" {
 		resourceName = resourceSelfLink
 	}
-	auditTime := constraint.AuditTime
-	eventTime, err := ptypes.TimestampProto(auditTime)
-	if err != nil {
-		c.log.Error(err, "could not convert auditTime to Timestamp proto, using current time instead", "auditTime", auditTime)
-		eventTime, err = ptypes.TimestampProto(time.Now())
-		if err != nil {
-			c.log.Error(err, "could not convert time.Now() to Timestamp proto")
-		}
+	eventTime := timestamppb.Now()
+	if !constraint.AuditTime.IsZero() {
+		// use audit time if not zero value
+		eventTime = timestamppb.New(constraint.AuditTime)
 	}
 	ID := determineFindingID(constraint, resource)
 	return &securitycenter.CreateFindingRequest{

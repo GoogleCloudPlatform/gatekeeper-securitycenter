@@ -17,14 +17,13 @@ package securitycenter
 import (
 	"context"
 	"fmt"
-	"time"
 
-	"github.com/golang/protobuf/ptypes"
 	"github.com/pkg/errors"
 	"google.golang.org/api/iterator"
 	securitycenterpb "google.golang.org/genproto/googleapis/cloud/securitycenter/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	errorutils "k8s.io/apimachinery/pkg/util/errors"
 )
 
@@ -131,12 +130,12 @@ func (c *Client) filterUnsyncedFindingRequests(findingRequests map[string]*secur
 //
 // The returned error is either:
 //
-// - `iteratorError` if there is an error iterating over the findings in the page. The caller
-//   should check for this using errors.Is(err, itegatorError) and stop fetching pages if true; or
+//   - `iteratorError` if there is an error iterating over the findings in the page. The caller
+//     should check for this using errors.Is(err, itegatorError) and stop fetching pages if true; or
 //
-// - an aggregate of the errors when applying the mapFn to the findings in the page. In this case,
-//   the caller can choose to stop fetching pages, or continue and collect all errors to report at
-//   the end.
+//   - an aggregate of the errors when applying the mapFn to the findings in the page. In this case,
+//     the caller can choose to stop fetching pages, or continue and collect all errors to report at
+//     the end.
 //
 // Ref: https://cloud.google.com/security-command-center/docs/reference/rest/v1/organizations.sources.findings/list
 func (c *Client) mapFindingsPage(ctx context.Context, source string, pageToken string, mapFn func(ctx context.Context, finding *securitycenterpb.Finding) (*securitycenterpb.Finding, error)) ([]*securitycenterpb.Finding, string, error) {
@@ -219,15 +218,11 @@ func (c *Client) setFindingState(ctx context.Context, finding *securitycenterpb.
 		c.log.Info("(dry-run) skip set finding state", "findingIDToName", finding.Name, "state", newState.String())
 		return finding, nil
 	}
-	now, err := ptypes.TimestampProto(time.Now())
-	if err != nil {
-		return nil, err
-	}
 	c.log.Info("set finding state", "findingIDToName", finding.Name, "state", newState.String())
 	req := &securitycenterpb.SetFindingStateRequest{
 		Name:      finding.Name,
 		State:     newState,
-		StartTime: now,
+		StartTime: timestamppb.Now(),
 	}
 	ctx, cancel := context.WithTimeout(ctx, c.timeout)
 	defer cancel()
