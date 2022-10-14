@@ -17,11 +17,12 @@ package securitycenter
 import (
 	"context"
 	"fmt"
-	"github.com/googlecloudplatform/gatekeeper-securitycenter/pkg/version"
 	"time"
 
 	securitycenterv1 "cloud.google.com/go/securitycenter/apiv1"
 	"github.com/go-logr/logr"
+	"github.com/googlecloudplatform/gatekeeper-securitycenter/pkg/version"
+	"google.golang.org/api/impersonate"
 	"google.golang.org/api/option"
 )
 
@@ -59,9 +60,14 @@ func NewClient(ctx context.Context, log logr.Logger, googleServiceAccount string
 	}
 	if googleServiceAccount != "" {
 		log.V(1).Info("impersonating Google service account", "serviceAccount", googleServiceAccount)
-		opts = append(opts,
-			option.ImpersonateCredentials(googleServiceAccount),
-			option.WithScopes(securitycenterv1.DefaultAuthScopes()...))
+		tokenSource, err := impersonate.CredentialsTokenSource(ctx, impersonate.CredentialsConfig{
+			TargetPrincipal: googleServiceAccount,
+			Scopes:          securitycenterv1.DefaultAuthScopes(),
+		})
+		if err != nil {
+			return nil, fmt.Errorf("could not create token source for Google service account %s: %w", googleServiceAccount, err)
+		}
+		opts = append(opts, option.WithTokenSource(tokenSource))
 	}
 	opts = append(opts, option.WithUserAgent("cloud-solutions/gatekeeper-securitycenter-"+version.Version))
 	securitycenterClient, err := securitycenterv1.NewClient(ctx, opts...)
@@ -80,7 +86,7 @@ func NewClient(ctx context.Context, log logr.Logger, googleServiceAccount string
 // SetTimeout for calls to the Security Center API
 func (c *Client) SetTimeout(timeout time.Duration) error {
 	if timeout.Seconds() <= 0 {
-		return fmt.Errorf("Invalid timeout: %v", timeout)
+		return fmt.Errorf("invalid timeout: %+v", timeout)
 	}
 	c.timeout = timeout
 	return nil
