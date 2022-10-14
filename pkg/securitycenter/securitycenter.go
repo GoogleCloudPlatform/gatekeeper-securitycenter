@@ -17,6 +17,7 @@ package securitycenter
 import (
 	"context"
 	"fmt"
+	"github.com/googlecloudplatform/gatekeeper-securitycenter/pkg/version"
 	"time"
 
 	securitycenterv1 "cloud.google.com/go/securitycenter/apiv1"
@@ -62,6 +63,7 @@ func NewClient(ctx context.Context, log logr.Logger, googleServiceAccount string
 			option.ImpersonateCredentials(googleServiceAccount),
 			option.WithScopes(securitycenterv1.DefaultAuthScopes()...))
 	}
+	opts = append(opts, option.WithUserAgent("cloud-solutions/gatekeeper-securitycenter-"+version.Version))
 	securitycenterClient, err := securitycenterv1.NewClient(ctx, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not create securitycenter client: %w", err)
