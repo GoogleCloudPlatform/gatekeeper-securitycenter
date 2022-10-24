@@ -51,7 +51,6 @@ else
     gcloud container clusters create "$CLUSTER" \
         --enable-autoprovisioning --max-cpu "$MAX_CPU" --max-memory "$MAX_MEMORY" \
         --enable-ip-alias \
-        --enable-stackdriver-kubernetes \
         --project "$HOST_PROJECT_ID" \
         --release-channel "$RELEASE_CHANNEL" \
         --tags "$CLUSTER_NODES_TAGS" \

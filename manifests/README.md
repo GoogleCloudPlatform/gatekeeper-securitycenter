@@ -46,8 +46,9 @@ kpt pkg get https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter.git
 
 If your Google Kubernetes Engine (GKE) cluster uses
 [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity),
-add an annotation for the Google service account `FINDINGS_EDITOR_SA` to bind
-it to the `gatekeeper-securitycenter-controller` Kubernetes service account:
+add an annotation to bind the `gatekeeper-securitycenter-controller`
+Kubernetes service account to the Google service account
+`FINDINGS_EDITOR_SA`:
 
 ```sh
 kpt fn eval manifests \

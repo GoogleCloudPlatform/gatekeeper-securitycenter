@@ -16,5 +16,7 @@ apiVersion: kpt.dev/v1
 kind: Kptfile
 metadata:
   name: gatekeeper-securitycenter-prereqs
+  annotations:
+    config.kubernetes.io/local-config: 'true'
 info:
   description: Prerequisites for the gatekeeper-securitycenter controller.

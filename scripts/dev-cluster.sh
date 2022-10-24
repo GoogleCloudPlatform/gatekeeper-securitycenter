@@ -49,7 +49,6 @@ GATEKEEPER_VERSION=v3.5.1
 
 gcloud container clusters create "$CLUSTER" \
     --enable-ip-alias \
-    --enable-stackdriver-kubernetes \
     --num-nodes "$NUM_NODES" \
     --release-channel "$RELEASE_CHANNEL" \
     --workload-pool "$CLOUDSDK_CORE_PROJECT.svc.id.goog" \
