@@ -28,11 +28,10 @@ jobs:
 
     env:
       CGO_ENABLED: "0"
-      COSIGN_VERSION: v1.13.0
-      GGCR_VERSION: v0.11.0
-      KPT_VERSION: 1.0.0-beta.21
+      COSIGN_VERSION: v1.13.1
+      GGCR_VERSION: v0.12.0
       REGISTRY: ghcr.io
-      SKAFFOLD_VERSION: v1.39.2
+      SKAFFOLD_VERSION: v2.0.0
       SKAFFOLD_CACHE_ARTIFACTS: "false"
       SKAFFOLD_DETECT_MINIKUBE: "false"
       SKAFFOLD_INTERACTIVE: "false"
@@ -46,20 +45,13 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Setup Go
-      uses: actions/setup-go@v1
+      uses: actions/setup-go@v3
       with:
-        go-version: 1.19
-
-    - name: Restore dependency cache
-      uses: actions/cache@v2
-      with:
-        path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-
+        go-version-file: go.mod
+        cache: true
 
     - name: Set image env vars
       run: |
@@ -132,16 +124,15 @@ jobs:
         echo -n IMAGE_NAME= >> $GITHUB_ENV
         echo $(jq -r '.builds[] | select(.imageName=="gatekeeper-securitycenter") | .tag' ${{ runner.temp }}/skaffold-artifacts.json) >> $GITHUB_ENV
 
-    - name: Install crane
+    - name: Install krane
       run: |
         mkdir -p $HOME/.local/bin
-        curl -sSL "https://github.com/google/go-containerregistry/releases/download/${GGCR_VERSION}/go-containerregistry_$(uname -s)_$(uname -m).tar.gz" | tar -xzC $HOME/.local/bin crane
-
-    - name: Authenticate to container image registry
-      run: crane auth login ${{ env.REGISTRY }} -u ${{ github.actor }} -p ${{ github.token }}
+        curl -sSL "https://github.com/google/go-containerregistry/releases/download/${GGCR_VERSION}/go-containerregistry_$(uname -s)_$(uname -m).tar.gz" | tar -xzC $HOME/.local/bin krane
 
     - name: Update latest tag
-      run: crane tag $IMAGE_NAME latest
+      run: krane tag $IMAGE_NAME latest
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
 
     - name: Install Cosign
       uses: sigstore/cosign-installer@main
@@ -149,9 +140,10 @@ jobs:
         cosign-release: ${{ env.COSIGN_VERSION }}
 
     - name: Sign the images with GitHub OIDC Token
-      run: cosign sign --force --recursive --upload $IMAGE_NAME
+      run: cosign sign --force --k8s-keychain --recursive --upload $IMAGE_NAME
       env:
         COSIGN_EXPERIMENTAL: 1
+        GITHUB_TOKEN: ${{ github.token }}
 
     - name: Create release body file
       run: |
@@ -163,29 +155,17 @@ jobs:
             $IMAGE_NAME
         EOF
 
-    - name: Install kpt
-      run: |
-        mkdir -p $HOME/.local/bin
-        curl -sSL "https://github.com/GoogleContainerTools/kpt/releases/download/v${KPT_VERSION}/kpt_$(go env GOOS)_$(go env GOARCH)-${KPT_VERSION}.tar.gz" | tar -xzC $HOME/.local/bin kpt
-
     - name: Set image name in deployment manifest
-      run: |
-        kpt fn eval manifests \
-          --image gcr.io/kpt-fn/apply-setters:v0.2 \
-          -- \
-          "image=$IMAGE_NAME"
-
-    - name: Update setter values file
       run: |
         tmpfile=$(mktemp)
         kubectl patch \
-          --dry-run \
-          --filename setters.yaml \
+          --dry-run=client \
+          --filename deployment.yaml \
           --local \
           --output yaml \
-          --patch '{"data":{"image":"${{ env.IMAGE_NAME }}"}}' \
+          --patch '{"spec":{"template":{"spec":{"containers":[{"name":"manager","image":"${{ env.IMAGE_NAME }}"}]}}}}' \
           > $tmpfile
-        mv $tmpfile setters.yaml
+        mv $tmpfile deployment.yaml
       working-directory: manifests
 
     - name: Update version in readme

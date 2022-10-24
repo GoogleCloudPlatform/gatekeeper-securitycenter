@@ -36,7 +36,7 @@ following resources:
 -   a Security Command Center source
 -   a Google service account with the
     [Security Center Findings Editor](https://cloud.google.com/security-command-center/docs/access-control)
-    role on the Security Command Center source
+    role on the Security Command Center source.
 
 To create these prerequisite resources, choose one of these options:
 

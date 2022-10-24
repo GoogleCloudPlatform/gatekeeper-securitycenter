@@ -13,8 +13,6 @@
 # limitations under the License.
 
 .idea/
-.kpt-hydrated/
-.tmp-sink-dir/
-.vscode/
+.kpt-pipeline/
 gatekeeper-securitycenter
 gatekeeper-securitycenter-v*
