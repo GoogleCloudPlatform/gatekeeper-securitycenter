@@ -14,7 +14,7 @@ These instructions assume that you have already created the
 ### Fetch the manifests
 
 ```sh
-VERSION=v0.3.0
+VERSION=v0.4.0
 kpt pkg get https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter.git/manifests@$VERSION manifests
 ```
 
