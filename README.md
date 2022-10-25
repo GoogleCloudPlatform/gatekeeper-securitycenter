@@ -70,7 +70,7 @@ domain you own. Cloud Identity offers a
 Download the binary for your platform:
 
 ```sh
-VERSION=v0.3.0
+VERSION=v0.4.0
 curl -Lo gatekeeper-securitycenter "https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter/releases/download/${VERSION}/gatekeeper-securitycenter_$(uname -s)_$(uname -m)"
 chmod +x gatekeeper-securitycenter
 ```
