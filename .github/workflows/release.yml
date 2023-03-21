@@ -17,10 +17,10 @@ name: Release
 on:
   push:
     tags:
-    - "v[0-9]+.[0-9]+.[0-9]+-rc[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-rc[0-9]+"
     paths-ignore:
-    - "**.md"
-    - "docs/**"
+      - "**.md"
+      - "docs/**"
 
 jobs:
   release:
@@ -44,217 +44,217 @@ jobs:
       packages: write
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Setup Go
-      uses: actions/setup-go@v3
-      with:
-        go-version-file: go.mod
-        cache: true
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version-file: go.mod
+          cache: true
 
-    - name: Set image env vars
-      run: |
-        echo IMAGE_REPO=$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
-        RC_VERSION=${GITHUB_REF#refs/tags/}
-        echo VERSION=${RC_VERSION%-rc*} >> $GITHUB_ENV
+      - name: Set image env vars
+        run: |
+          echo IMAGE_REPO=$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
+          RC_VERSION=${GITHUB_REF#refs/tags/}
+          echo VERSION=${RC_VERSION%-rc*} >> $GITHUB_ENV
 
-    - name: Print env
-      run: |
-        echo HOME=$HOME
-        echo PATH=$PATH
-        go version
-        go env
+      - name: Print env
+        run: |
+          echo HOME=$HOME
+          echo PATH=$PATH
+          go version
+          go env
 
-    - name: Run unit tests
-      run: |
-        go test -v -count=1 -short -timeout=5m -vet=asmdecl,assign,atomic,bools,buildtag,cgocall,composites,copylocks,errorsas,httpresponse,loopclosure,lostcancel,nilfunc,printf,shift,stdmethods,structtag,tests,unmarshal,unreachable,unsafeptr,unusedresult ./...
+      - name: Run unit tests
+        run: |
+          go test -v -count=1 -short -timeout=5m -vet=asmdecl,assign,atomic,bools,buildtag,cgocall,composites,copylocks,errorsas,httpresponse,loopclosure,lostcancel,nilfunc,printf,shift,stdmethods,structtag,tests,unmarshal,unreachable,unsafeptr,unusedresult ./...
 
-    - name: Create release branch
-      run: |
-        git checkout -B release-$VERSION
+      - name: Create release branch
+        run: |
+          git checkout -B release-$VERSION
 
-    - name: Populate version number in embedded file
-      run: |
-        echo "$VERSION" > pkg/version/version.txt
+      - name: Populate version number in embedded file
+        run: |
+          echo "$VERSION" > pkg/version/version.txt
 
-    - name: Commit and push to release branch with new version number
-      run: |
-        git add pkg/version/version.txt
-        git config user.name github-actions
-        git config user.email github-actions@github.com
-        git commit -m "Update binary version to $VERSION"
-        git push --force origin release-$VERSION
+      - name: Commit and push to release branch with new version number
+        run: |
+          git add pkg/version/version.txt
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git commit -m "Update binary version to $VERSION"
+          git push --force origin release-$VERSION
 
-    - name: Set image label env vars
-      run: |
-        echo REVISION=$(git rev-parse HEAD) >> $GITHUB_ENV
-        echo SOURCE=${{ github.server_url }}/${{ github.repository }}.git >> $GITHUB_ENV
-        echo URL=${{ github.server_url }}/${{ github.repository }} >> $GITHUB_ENV
+      - name: Set image label env vars
+        run: |
+          echo REVISION=$(git rev-parse HEAD) >> $GITHUB_ENV
+          echo SOURCE=${{ github.server_url }}/${{ github.repository }}.git >> $GITHUB_ENV
+          echo URL=${{ github.server_url }}/${{ github.repository }} >> $GITHUB_ENV
 
-    - name: Build binaries
-      run: |
-        GOOS=darwin GOARCH=amd64 go build -v -trimpath -ldflags="-s -w" -o gatekeeper-securitycenter_Darwin_x86_64 .
-        GOOS=darwin GOARCH=arm64 go build -v -trimpath -ldflags="-s -w" -o gatekeeper-securitycenter_Darwin_arm64 .
-        GOOS=linux  GOARCH=amd64 go build -v -trimpath -ldflags="-s -w" -o gatekeeper-securitycenter_Linux_x86_64 .
-        GOOS=linux  GOARCH=arm64 go build -v -trimpath -ldflags="-s -w" -o gatekeeper-securitycenter_Linux_aarch64 .
+      - name: Build binaries
+        run: |
+          GOOS=darwin GOARCH=amd64 go build -v -trimpath -ldflags="-s -w" -o gatekeeper-securitycenter_Darwin_x86_64 .
+          GOOS=darwin GOARCH=arm64 go build -v -trimpath -ldflags="-s -w" -o gatekeeper-securitycenter_Darwin_arm64 .
+          GOOS=linux  GOARCH=amd64 go build -v -trimpath -ldflags="-s -w" -o gatekeeper-securitycenter_Linux_x86_64 .
+          GOOS=linux  GOARCH=arm64 go build -v -trimpath -ldflags="-s -w" -o gatekeeper-securitycenter_Linux_aarch64 .
 
-    - name: Install Skaffold
-      run: |
-        mkdir -p $HOME/.local/bin
-        curl -sSLo $HOME/.local/bin/skaffold "https://storage.googleapis.com/skaffold/releases/${SKAFFOLD_VERSION}/skaffold-$(go env GOOS)-$(go env GOARCH)"
-        chmod +x $HOME/.local/bin/skaffold
+      - name: Install Skaffold
+        run: |
+          mkdir -p $HOME/.local/bin
+          curl -sSLo $HOME/.local/bin/skaffold "https://storage.googleapis.com/skaffold/releases/${SKAFFOLD_VERSION}/skaffold-$(go env GOOS)-$(go env GOARCH)"
+          chmod +x $HOME/.local/bin/skaffold
 
-    - name: Build and push container images
-      run: |
-        skaffold build \
-          --default-repo ${{ env.REGISTRY }}/${{ github.repository_owner }} \
-          --file-output ${{ runner.temp }}/skaffold-artifacts.json \
-          --profile release \
-          --push \
-          --tag $VERSION
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
+      - name: Build and push container images
+        run: |
+          skaffold build \
+            --default-repo ${{ env.REGISTRY }}/${{ github.repository_owner }} \
+            --file-output ${{ runner.temp }}/skaffold-artifacts.json \
+            --profile release \
+            --push \
+            --tag $VERSION
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
-    - name: Create checksums file
-      run: shasum -a 256 gatekeeper-securitycenter_* > SHA256SUMS
+      - name: Create checksums file
+        run: shasum -a 256 gatekeeper-securitycenter_* > SHA256SUMS
 
-    - name: Get image name with digest
-      run: |
-        echo -n IMAGE_NAME= >> $GITHUB_ENV
-        echo $(jq -r '.builds[] | select(.imageName=="gatekeeper-securitycenter") | .tag' ${{ runner.temp }}/skaffold-artifacts.json) >> $GITHUB_ENV
+      - name: Get image name with digest
+        run: |
+          echo -n IMAGE_NAME= >> $GITHUB_ENV
+          echo $(jq -r '.builds[] | select(.imageName=="gatekeeper-securitycenter") | .tag' ${{ runner.temp }}/skaffold-artifacts.json) >> $GITHUB_ENV
 
-    - name: Install krane
-      run: |
-        mkdir -p $HOME/.local/bin
-        curl -sSL "https://github.com/google/go-containerregistry/releases/download/${GGCR_VERSION}/go-containerregistry_$(uname -s)_$(uname -m).tar.gz" | tar -xzC $HOME/.local/bin krane
+      - name: Install krane
+        run: |
+          mkdir -p $HOME/.local/bin
+          curl -sSL "https://github.com/google/go-containerregistry/releases/download/${GGCR_VERSION}/go-containerregistry_$(uname -s)_$(uname -m).tar.gz" | tar -xzC $HOME/.local/bin krane
 
-    - name: Update latest tag
-      run: krane tag $IMAGE_NAME latest
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
+      - name: Update latest tag
+        run: krane tag $IMAGE_NAME latest
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
-    - name: Install Cosign
-      uses: sigstore/cosign-installer@main
-      with:
-        cosign-release: ${{ env.COSIGN_VERSION }}
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@main
+        with:
+          cosign-release: ${{ env.COSIGN_VERSION }}
 
-    - name: Sign the images with GitHub OIDC Token
-      run: cosign sign --force --k8s-keychain --recursive --upload $IMAGE_NAME
-      env:
-        COSIGN_EXPERIMENTAL: 1
-        GITHUB_TOKEN: ${{ github.token }}
+      - name: Sign the images with GitHub OIDC Token
+        run: cosign sign --force --k8s-keychain --recursive --upload $IMAGE_NAME
+        env:
+          COSIGN_EXPERIMENTAL: 1
+          GITHUB_TOKEN: ${{ github.token }}
 
-    - name: Create release body file
-      run: |
-        cat << EOF > ${{ runner.temp }}/body.md
-        ## Images
+      - name: Create release body file
+        run: |
+          cat << EOF > ${{ runner.temp }}/body.md
+          ## Images
 
-        GitHub Container Registry:
+          GitHub Container Registry:
 
-            $IMAGE_NAME
-        EOF
+              $IMAGE_NAME
+          EOF
 
-    - name: Set image name in deployment manifest
-      run: |
-        tmpfile=$(mktemp)
-        kubectl patch \
-          --dry-run=client \
-          --filename deployment.yaml \
-          --local \
-          --output yaml \
-          --patch '{"spec":{"template":{"spec":{"containers":[{"name":"manager","image":"${{ env.IMAGE_NAME }}"}]}}}}' \
-          > $tmpfile
-        mv $tmpfile deployment.yaml
-      working-directory: manifests
+      - name: Set image name in deployment manifest
+        run: |
+          tmpfile=$(mktemp)
+          kubectl patch \
+            --dry-run=client \
+            --filename deployment.yaml \
+            --local \
+            --output yaml \
+            --patch '{"spec":{"template":{"spec":{"containers":[{"name":"manager","image":"${{ env.IMAGE_NAME }}"}]}}}}' \
+            > $tmpfile
+          mv $tmpfile deployment.yaml
+        working-directory: manifests
 
-    - name: Update version in readme
-      run: |
-        sed -i "s/VERSION=.*/VERSION=$VERSION/" README.md manifests/README.md
+      - name: Update version in readme
+        run: |
+          sed -i "s/VERSION=.*/VERSION=$VERSION/" README.md manifests/README.md
 
-    - name: Commit and push to release branch with new version and image ref
-      run: |
-        git add README.md manifests
-        git config user.name github-actions
-        git config user.email github-actions@github.com
-        git commit -m "Update image version in manifest to $VERSION"
-        git push --force origin release-$VERSION
+      - name: Commit and push to release branch with new version and image ref
+        run: |
+          git add README.md manifests
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git commit -m "Update image version in manifest to $VERSION"
+          git push --force origin release-$VERSION
 
-    - name: Set release env vars
-      run: |
-        echo COMMITISH=$(git rev-parse HEAD) >> $GITHUB_ENV
+      - name: Set release env vars
+        run: |
+          echo COMMITISH=$(git rev-parse HEAD) >> $GITHUB_ENV
 
-    - name: Create release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ env.VERSION }}
-        release_name: ${{ env.VERSION }}
-        body_path: ${{ runner.temp }}/body.md
-        commitish: ${{ env.COMMITISH }}
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.VERSION }}
+          release_name: ${{ env.VERSION }}
+          body_path: ${{ runner.temp }}/body.md
+          commitish: ${{ env.COMMITISH }}
 
-    - name: Upload binary darwin amd64
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: gatekeeper-securitycenter_Darwin_x86_64
-        asset_name: gatekeeper-securitycenter_Darwin_x86_64
-        asset_content_type: application/octet-stream
+      - name: Upload binary darwin amd64
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: gatekeeper-securitycenter_Darwin_x86_64
+          asset_name: gatekeeper-securitycenter_Darwin_x86_64
+          asset_content_type: application/octet-stream
 
-    - name: Upload binary darwin arm64
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: gatekeeper-securitycenter_Darwin_arm64
-        asset_name: gatekeeper-securitycenter_Darwin_arm64
-        asset_content_type: application/octet-stream
+      - name: Upload binary darwin arm64
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: gatekeeper-securitycenter_Darwin_arm64
+          asset_name: gatekeeper-securitycenter_Darwin_arm64
+          asset_content_type: application/octet-stream
 
-    - name: Upload binary linux amd64
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: gatekeeper-securitycenter_Linux_x86_64
-        asset_name: gatekeeper-securitycenter_Linux_x86_64
-        asset_content_type: application/octet-stream
+      - name: Upload binary linux amd64
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: gatekeeper-securitycenter_Linux_x86_64
+          asset_name: gatekeeper-securitycenter_Linux_x86_64
+          asset_content_type: application/octet-stream
 
-    - name: Upload binary linux arm64
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: gatekeeper-securitycenter_Linux_aarch64
-        asset_name: gatekeeper-securitycenter_Linux_aarch64
-        asset_content_type: application/octet-stream
+      - name: Upload binary linux arm64
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: gatekeeper-securitycenter_Linux_aarch64
+          asset_name: gatekeeper-securitycenter_Linux_aarch64
+          asset_content_type: application/octet-stream
 
-    - name: Upload checksums file
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: SHA256SUMS
-        asset_name: SHA256SUMS
-        asset_content_type: text/plain
+      - name: Upload checksums file
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: SHA256SUMS
+          asset_name: SHA256SUMS
+          asset_content_type: text/plain
 
-    - name: Update version in readme on main branch
-      run: |
-        git config user.name github-actions
-        git config user.email github-actions@github.com
-        git reset --hard
-        git remote update
-        git checkout main
-        git pull --no-edit --no-rebase --strategy-option=theirs origin
-        sed -i "s/VERSION=.*/VERSION=$VERSION/" README.md manifests/README.md
-        git add README.md manifests/README.md
-        git commit -m "Update version in readme to $VERSION"
-        git pull --no-edit --no-rebase --strategy-option=ours origin
-        git push origin main
+      - name: Update version in readme on main branch
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git reset --hard
+          git remote update
+          git checkout main
+          git pull --no-edit --no-rebase --strategy-option=theirs origin
+          sed -i "s/VERSION=.*/VERSION=$VERSION/" README.md manifests/README.md
+          git add README.md manifests/README.md
+          git commit -m "Update version in readme to $VERSION"
+          git pull --no-edit --no-rebase --strategy-option=ours origin
+          git push origin main

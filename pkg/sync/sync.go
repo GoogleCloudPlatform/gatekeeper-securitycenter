@@ -34,7 +34,10 @@ import (
 	"github.com/googlecloudplatform/gatekeeper-securitycenter/pkg/securitycenter"
 )
 
-const cnrmAnnotationProjectID = "cnrm.cloud.google.com/project-id"
+const (
+	cnrmAnnotationProjectID = "cnrm.cloud.google.com/project-id"
+	esAnnotationSeverity    = "gatekeeper.epidemicsound.com/severity"
+)
 
 // Client to sync audit violations to Security Command Center
 type Client struct {
@@ -223,6 +226,9 @@ func (c *Client) getResource(ctx context.Context, violation map[string]interface
 	// Config Connector resources have an annotation pointing to the
 	// project ID of the Google Cloud resource. Get it if available.
 	projectID := resource.GetAnnotations()[cnrmAnnotationProjectID]
+	// In Epidemic, we set a custom annotation to indicate the Constraint's
+	// Severity when triggered. Get it if available.
+	severity := resource.GetAnnotations()[esAnnotationSeverity]
 	message, _, _ := unstructured.NestedString(violation, "message")
 	specJSON, err := getSpecAsJSON(resource)
 	if err != nil {
@@ -235,6 +241,7 @@ func (c *Client) getResource(ctx context.Context, violation map[string]interface
 		SelfLink:       resource.GetSelfLink(),
 		UID:            resource.GetUID(),
 		ProjectID:      projectID,
+		Severity:       severity,
 		StatusSelfLink: statusSelfLink,
 		Message:        message,
 		SpecJSON:       specJSON,

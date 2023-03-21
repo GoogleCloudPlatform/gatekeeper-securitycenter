@@ -18,6 +18,8 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"regexp"
+	"strings"
 	"time"
 
 	"google.golang.org/genproto/googleapis/cloud/securitycenter/v1"
@@ -29,6 +31,8 @@ import (
 
 const scannerName = "GATEKEEPER"
 
+var policyRegex = regexp.MustCompile(`^(P\d{4}):`)
+
 // Resource holds the resource-related values used to create a finding request
 type Resource struct {
 	Name           string
@@ -37,6 +41,7 @@ type Resource struct {
 	SelfLink       string
 	UID            types.UID
 	ProjectID      string
+	Severity       string
 	StatusSelfLink string
 	Message        string
 	SpecJSON       string
@@ -67,7 +72,14 @@ func (c *Client) createFindingRequest(constraint *Constraint, resource *Resource
 	resourceStatusSelfLink := fmt.Sprintf("%.255s", resource.StatusSelfLink)
 
 	// Limit message to 255 chars
+	policyID := ""
 	message := fmt.Sprintf("%.255s", resource.Message)
+
+	matches := policyRegex.FindStringSubmatch(resource.Message)
+	if matches != nil {
+		policyID = fmt.Sprintf("%.255s", matches[1])
+		message = fmt.Sprintf("%.255s", matches[2])
+	}
 
 	// Use the status.selfLink attribute as the ResourceName if available.
 	// This gives users a direct link from SCC to the resource in the web Cloud Console.
@@ -81,6 +93,8 @@ func (c *Client) createFindingRequest(constraint *Constraint, resource *Resource
 		eventTime = timestamppb.New(constraint.AuditTime)
 	}
 	ID := determineFindingID(constraint, resource)
+	severity := getSCCSeverity(resource.Severity)
+
 	return &securitycenter.CreateFindingRequest{
 		Parent:    c.source,
 		FindingId: ID,
@@ -90,10 +104,12 @@ func (c *Client) createFindingRequest(constraint *Constraint, resource *Resource
 			Category:     constraint.Kind,
 			EventTime:    eventTime,
 			ExternalUri:  constraintSelfLink,
+			Severity:     severity,
 			SourceProperties: map[string]*structpb.Value{
 				// each source property value must be max 255 chars
 				"ScannerName":                {Kind: &structpb.Value_StringValue{StringValue: scannerName}},
 				"Explanation":                {Kind: &structpb.Value_StringValue{StringValue: message}},
+				"PolicyID":                   {Kind: &structpb.Value_StringValue{StringValue: policyID}},
 				"Cluster":                    {Kind: &structpb.Value_StringValue{StringValue: c.cluster}},
 				"ConstraintName":             {Kind: &structpb.Value_StringValue{StringValue: constraint.Name}},
 				"ConstraintSelfLink":         {Kind: &structpb.Value_StringValue{StringValue: constraintSelfLink}},
@@ -129,4 +145,19 @@ func (c *Client) createFindingRequest(constraint *Constraint, resource *Resource
 func determineFindingID(c *Constraint, r *Resource) string {
 	uidSha := sha256.Sum256([]byte(fmt.Sprintf("%s%s%s%s%s%s", c.UID, c.SpecJSON, c.TemplateUID, c.TemplateSpecJSON, r.UID, r.SpecJSON)))
 	return hex.EncodeToString(uidSha[:])[:32]
+}
+
+func getSCCSeverity(severity string) securitycenter.Finding_Severity {
+	switch strings.ToLower(severity) {
+	case "low":
+		return securitycenter.Finding_LOW
+	case "medium":
+		return securitycenter.Finding_MEDIUM
+	case "high":
+		return securitycenter.Finding_HIGH
+	case "critical":
+		return securitycenter.Finding_CRITICAL
+	default:
+		return securitycenter.Finding_SEVERITY_UNSPECIFIED
+	}
 }
