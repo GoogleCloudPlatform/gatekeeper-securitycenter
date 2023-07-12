@@ -24,7 +24,7 @@
 #
 # required to use the `gatekeeper-securitycenter` CLI and controller.
 #
-# Source this script to set up environment variables to use with `kpt cfg set`.
+# Source this script to set up environment variables to use with `kpt`.
 #
 # If you have an existing Security Command Center source that you want to use,
 # set the SOURCE_NAME environment variable before running this script.
@@ -38,11 +38,11 @@
 #
 # - Workload Identity is enabled in the GKE cluster;
 #
-# - you have installed jq; and.
+# - you have installed `jq``; and.
 #
 # To read explanations for the commands used in this script, see the
 # instructions in the tutorial:
-# https://cloud.google.com/architecture/reporting-policy-controller-audit-violations-security-command-center
+# https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter/blob/main/docs/tutorial.md
 
 set -euf -o pipefail
 
@@ -58,7 +58,7 @@ FINDINGS_EDITOR_SA_NAME=${FINDINGS_EDITOR_SA_NAME:-gatekeeper-securitycenter}
 FINDINGS_EDITOR_SA=$FINDINGS_EDITOR_SA_NAME@$CLOUDSDK_CORE_PROJECT.iam.gserviceaccount.com
 
 SOURCE_DISPLAY_NAME=${SOURCE_DISPLAY_NAME:-"Gatekeeper"}
-SOURCE_DESCRIPTION=${SOURCE_DESCRIPTION:-"Reports violations from Gatekeeper audits"}
+SOURCE_DESCRIPTION=${SOURCE_DESCRIPTION:-"Reports violations from OPA Gatekeeper audits"}
 
 K8S_NAMESPACE=${K8S_NAMESPACE:-gatekeeper-securitycenter}
 K8S_SA=${K8S_SA:-gatekeeper-securitycenter-controller}

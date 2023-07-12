@@ -16,7 +16,7 @@ For each iteration of the control loop:
     to find all
     [(group, resource)](https://github.com/kubernetes/apimachinery/blob/v0.19.4/pkg/runtime/schema/group_version.go#L54)
     types for Gatekeeper constraints by querying using the
-    [`constraint` category](https://github.com/open-policy-agent/frameworks/blob/125fdd8ffe0907aa5bf66c95d8939faed5a97f86/constraint/pkg/client/crd_helpers.go#L97).
+    [`constraint` category](https://github.com/open-policy-agent/frameworks/blob/6ccacf85c2c5a8a0689669a4e2fd8c3256a20be4/constraint/pkg/client/crds/crds.go#L37).
 
 2.  Add the `v1beta1` version to turn `GroupResource`s into
     [`GroupVersionResource`](https://github.com/kubernetes/apimachinery/blob/v0.19.4/pkg/runtime/schema/group_version.go#L96)s
@@ -30,7 +30,7 @@ For each iteration of the control loop:
 
 4.  Filter constraints to only keep those that have violations, by checking
     the presence of the
-    [`status.violations`](https://github.com/open-policy-agent/gatekeeper#audit)
+    [`status.violations`](https://open-policy-agent.github.io/gatekeeper/website/docs/audit/)
     field. Use a map to avoid duplicates from the dynamic client, the map key
     is the constraint UID.
 
@@ -113,7 +113,7 @@ To detect these changes, the finding ID is determined as follows:
 
 ## Limitations
 
--   Policy Controller and Gatekeeper have a
-    [default limit of 20 reported violations per constraint](https://github.com/open-policy-agent/gatekeeper#audit).
+-   OPA Gatekeeper has a
+    [default limit of 20 reported violations per constraint](https://open-policy-agent.github.io/gatekeeper/website/docs/audit/#configuring-audit).
 
 -   The controller doesn't collect or expose any metrics for monitoring.

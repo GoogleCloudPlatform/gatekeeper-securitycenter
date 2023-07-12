@@ -43,8 +43,8 @@ profiles:
     path: /build/artifacts/0/ko/labels
     value:
       org.opencontainers.image.description: >-
-        Report Policy Controller and OPA Gatekeeper audit violations in
-        Security Command Center.
+        Report OPA Gatekeeper audit violations in
+        Google Cloud Security Command Center.
       org.opencontainers.image.licenses: Apache-2.0
       org.opencontainers.image.revision: '{{.REVISION}}'
       org.opencontainers.image.source: '{{.SOURCE}}'

@@ -14,5 +14,6 @@
 
 .idea/
 .kpt-pipeline/
+.vscode/
 gatekeeper-securitycenter
 gatekeeper-securitycenter-v*
