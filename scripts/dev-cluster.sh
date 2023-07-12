@@ -15,7 +15,7 @@
 # limitations under the License.
 
 # This script creates a Google Kubernetes Engine (GKE) cluster with
-# Workload Identity and Gatekeeper.
+# Workload Identity and OPA Gatekeeper.
 #
 # This is intended as an aid in setting up a development environment and to
 # automate steps in the tutorial. This script is _not_ recommended for
@@ -33,7 +33,7 @@
 #
 # To read explanations for the commands used in this script, see the
 # instructions in the tutorial:
-# https://cloud.google.com/architecture/reporting-policy-controller-audit-violations-security-command-center
+# https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter/blob/main/docs/tutorial.md
 
 set -euf -o pipefail
 
@@ -45,7 +45,8 @@ NUM_NODES=${NUM_NODES:-3}
 RELEASE_CHANNEL=${RELEASE_CHANNEL:-regular}
 ZONE=${ZONE:-us-central1-f}
 
-GATEKEEPER_VERSION=v3.5.1
+GATEKEEPER_VERSION=${GATEKEEPER_VERSION:-$(curl -sL https://api.github.com/repos/open-policy-agent/gatekeeper/releases \
+        | jq -r ".[].name" | grep -E ^v3\.[0-9]+\.[0-9]+$ | sort -rV | head -n1)}
 
 gcloud container clusters create "$CLUSTER" \
     --enable-ip-alias \
@@ -58,9 +59,9 @@ kubectl create clusterrolebinding cluster-admin-binding \
     --clusterrole cluster-admin \
     --user "$CLOUDSDK_CORE_ACCOUNT"
 
-kubectl apply -f https://raw.githubusercontent.com/open-policy-agent/gatekeeper/$GATEKEEPER_VERSION/deploy/gatekeeper.yaml
+kubectl apply --filename https://raw.githubusercontent.com/open-policy-agent/gatekeeper/$GATEKEEPER_VERSION/deploy/gatekeeper.yaml
 
-kubectl rollout status deploy gatekeeper-controller-manager -n gatekeeper-system
+kubectl rollout status deploy gatekeeper-controller-manager --namespace gatekeeper-system
 
 CLUSTER_NAME=$(kubectl config current-context)
 export CLUSTER_NAME

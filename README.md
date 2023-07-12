@@ -11,9 +11,7 @@ dashboard for Kubernetes resource policy violations.
     for violations reported by the
     [audit controller](https://cloud.google.com/anthos-config-management/docs/how-to/auditing-constraints)
     in
-    [Policy Controller](https://cloud.google.com/anthos-config-management/docs/concepts/policy-controller)
-    and
-    [Open Policy Agent (OPA) Gatekeeper](https://github.com/open-policy-agent/gatekeeper).
+    [Open Policy Agent (OPA) Gatekeeper](https://open-policy-agent.github.io/gatekeeper/website/).
 
 -   a command-line tool that creates Security Command Center
     [sources](https://cloud.google.com/security-command-center/docs/reference/rest/v1/organizations.sources)
@@ -32,7 +30,7 @@ Before installing the `gatekeeper-securitycenter` controller, create all the
 following resources:
 
 -   a Kubernetes cluster, for instance a Google Kubernetes Engine (GKE) cluster
--   Policy Controller or OPA Gatekeeper installed in the Kubernetes cluster
+-   OPA Gatekeeper installed in the Kubernetes cluster
 -   a Security Command Center source
 -   a Google service account with the
     [Security Center Findings Editor](https://cloud.google.com/security-command-center/docs/access-control)
@@ -40,16 +38,12 @@ following resources:
 
 To create these prerequisite resources, choose one of these options:
 
-1.  Use the [kpt](https://kpt.dev) package in the [`setup`](setup) directory.
-    This package creates resources using
-    [Config Connector](https://cloud.google.com/config-connector/docs/overview).
-
-2.  Use the shell scripts in the [`scripts`](scripts) directory. These scripts
-    create resources using the `gcloud` tool from the
+1.  Use the shell scripts in the [`scripts`](scripts) directory. These scripts
+    create resources using the `gcloud` command-line tool from the
     [Google Cloud SDK](https://cloud.google.com/sdk).
 
-3.  Follow the step-by-step instructions in the accompanying
-    [tutorial](https://cloud.google.com/architecture/reporting-policy-controller-audit-violations-security-command-center).
+2.  Follow the step-by-step instructions in the accompanying
+    [tutorial](https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter/blob/main/docs/tutorial.md).
 
 If you use Security Command Center Standard tier, you must have an appropriate
 Cloud IAM role for Security Command Center at the organization level, such as
@@ -82,7 +76,7 @@ the [documentation in the manifest directory](manifests/README.md).
 
 ## Documentation
 
--   [Tutorial](https://cloud.google.com/architecture/reporting-policy-controller-audit-violations-security-command-center)
+-   [Tutorial](https://github.com/GoogleCloudPlatform/gatekeeper-securitycenter/blob/main/docs/tutorial.md)
 
 -   [Building `gatekeeper-securitycenter`](docs/build.md)
 

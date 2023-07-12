@@ -31,11 +31,11 @@ import (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "gatekeeper-security",
-	Short: "Creates Security Command Center findings from OPA Gatekeeper and Policy Controller violations",
+	Short: "Creates Security Command Center findings from OPA Gatekeeper audit violations",
 	Long: `gatekeeper-securitycenter is:
 
 - a Kubernetes controller that creates Security Command Center
-  findings for violations reported by OPA Gatekeeper/Policy Controller's
+  findings for violations reported by the OPA Gatekeeper
   audit controller
 
 - a command-line tool that creates and manages the IAM policies of
