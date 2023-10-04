@@ -24,6 +24,11 @@ dashboard for Kubernetes resource policy violations.
 and
 [Security Command Center Premium tier](https://cloud.google.com/security-command-center/pricing#premium_tier_pricing).
 
+If you use
+[Policy Controller](https://cloud.google.com/anthos-config-management/docs/concepts/policy-controller)
+from Google Cloud, consider using its
+[in-built integration with Security Command Center](https://cloud.google.com/blog/products/identity-security/expanding-gke-posture-policy-controller-violations-now-in-security-command-center).
+
 ## Prerequisites
 
 Before installing the `gatekeeper-securitycenter` controller, create all the
