@@ -28,10 +28,10 @@ jobs:
 
     env:
       CGO_ENABLED: "0"
-      COSIGN_VERSION: v1.13.1
-      GGCR_VERSION: v0.12.0
+      COSIGN_VERSION: v2.4.0
+      GGCR_VERSION: v0.20.2
       REGISTRY: ghcr.io
-      SKAFFOLD_VERSION: v2.0.0
+      SKAFFOLD_VERSION: v2.13.1
       SKAFFOLD_CACHE_ARTIFACTS: "false"
       SKAFFOLD_DETECT_MINIKUBE: "false"
       SKAFFOLD_INTERACTIVE: "false"
@@ -140,7 +140,7 @@ jobs:
         cosign-release: ${{ env.COSIGN_VERSION }}
 
     - name: Sign the images with GitHub OIDC Token
-      run: cosign sign --force --k8s-keychain --recursive --upload $IMAGE_NAME
+      run: cosign sign --k8s-keychain --recursive --upload --yes $IMAGE_NAME
       env:
         COSIGN_EXPERIMENTAL: 1
         GITHUB_TOKEN: ${{ github.token }}
